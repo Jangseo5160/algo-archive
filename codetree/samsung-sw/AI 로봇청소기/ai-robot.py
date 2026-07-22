@@ -16,12 +16,14 @@ def move_cleaner():
     for i in range(K):
         r, c = cleaner[i]
         v=[[-1]*N for _ in range(N)]
-
+        if grid[r][c]>0:
+            continue
         q=deque([(r,c)])
         v[r][c]=0
         min_dist = float('inf')
         can = []
         cleaner_set = set(tuple(pos) for pos in cleaner)
+
         while q:
             cr, cc = q.popleft()
 
