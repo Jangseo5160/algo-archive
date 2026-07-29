@@ -1,164 +1,286 @@
-def myprint_3d(arr3):
-    for arr in arr3:
-        for lst in arr:
-            print(*lst)
-        print()
-    print()
-
-def myprint_2d(arr):
-        for lst in arr:
-            print(*lst)
-        print()
-
-def find_3d_start():
-    for i in range(M):
-        for j in range(M):
-            if arr3[4][i][j]==2:
-                return 4,i,j
-
-def find_2d_end():
-    for i in range(N):
-        for j in range(N):
-            if arr[i][j]==4:
-                arr[i][j]=0
-                return i, j
-
-def find_3d_base():
-    for i in range(N):
-        for j in range(N):
-            if arr[i][j]==3:
-                return i, j
-
-def find_3d_end_2d_start():
-    # [1] 3차원 시작좌표(base) 찾기
-    bi,bj = find_3d_base()
-
-    # [2] 3차원 좌표에서 2차원 연결좌표 찾기(1차 목적지)
-    for i in range(bi, bi+M):
-        for j in range(bj, bj+M):
-            if arr[i][j]!=3:        # 3차원 위치가 아니면 skip
-                continue
-
-            if arr[i][j+1]==0:      # 우측에 2차 시작점(3차원 우측으로 1차출구)
-                return 0, M-1, (M-1)-(i-bi), i, j+1     # ek(평면)=0, ei=M-1, ej=i, si=i, sj=j+1
-            elif arr[i][j-1]==0:    # 좌측으로 1차출구!
-                return 1, M-1, i-bi, i, j-1             # ek(평면)=1, ei=M-1, ej=i, si=i, sj=j+1
-            elif arr[i+1][j]==0:    # 아래쪽으로 1차출구!
-                return 2, M-1, j-bj, i+1, j             # ek(평면)=2, ei=M-1, ej=i, si=i, sj=j+1
-            elif arr[i-1][j]==0:    # 위쪽으로 1차출구!
-                return 3, M-1, (M-1)-(j-bj), i-1, j     # ek(평면)=3, ei=M-1, ej=i, si=i, sj=j+1
-
-    # 여기에 올일은 없지만..
-    return -1
-
-left_nxt = {0:2, 2:1, 1:3, 3:0}
-right_nxt = {0:3, 2:0, 1:2, 3:1}
-# dist = bfs_3d(sk_3d, si_3d, sj_3d,ek_3d, ei_3d, ej_3d)
 from collections import deque
-def bfs_3d(sk, si, sj,ek, ei, ej):
-    q = deque()
-    v = [[[0]*M for _ in range(M)] for _ in range(5)]
+import sys
+input = sys.stdin.readline
 
-    q.append((sk,si,sj))
-    v[sk][si][sj]=1
+# 방향: 동, 서, 남, 북
+dr = [0, 0, 1, -1]
+dc = [1, -1, 0, 0]
 
-    while q:
-        ck,ci,cj = q.popleft()
+EAST = 0
+WEST = 1
+SOUTH = 2
+NORTH = 3
+TOP = 4
 
-        if (ck,ci,cj)==(ek,ei,ej):
-            # myprint_3d(v)
-            return v[ck][ci][cj]
+EMPTY = 0
+WALL = 1
+TIME_MACHINE = 2
+CUBE = 3
+EXIT = 4
 
-        # 네방향, 범위내/범위밖->다른평명 이동처리, 미방문
-        for di,dj in ((-1,0),(1,0),(0,-1),(0,1)):
-            ni,nj = ci+di, cj+dj
+INF = 10 ** 18
 
-            # 범위밖
-            if ni<0:    # 위쪽 범위 이탈
-                if ck==0:   nk,ni,nj = 4,(M-1)-cj,M-1
-                elif ck==1: nk,ni,nj = 4,cj,0
-                elif ck==2: nk,ni,nj = 4,M-1,cj
-                elif ck==3: nk,ni,nj = 4,0,(M-1)-cj
-                elif ck==4: nk,ni,nj = 3,0,(M-1)-cj
-            elif ni>=M: # 아래쪽 범위이탈
-                if ck==4:   nk,ni,nj = 2,0,cj
-                else:       continue
-            elif nj<0:  # 왼쪽 범위이탈
-                if ck==4:   nk,ni,nj = 1,0,ci
-                else:
-                    nk,ni,nj = left_nxt[ck],ci,M-1
-            elif nj>=M: # 오른쪽 범위이탈
-                if ck==4:   nk,ni,nj = 0,0,(M-1)-ci
-                else:
-                    nk,ni,nj = right_nxt[ck],ci,0
-            else:       # 이탈아니면 같은 평면
-                nk=ck
-
-            # 미방문, 조건 맞으면
-            if v[nk][ni][nj]==0 and arr3[nk][ni][nj]==0:
-                q.append((nk,ni,nj))
-                v[nk][ni][nj]=v[ck][ci][cj]+1
-
-    # 이곳에 왔다는건? 경로 없음!
-    # myprint_3d(v)
-    return -1
-
-#     dist = bfs_2d(v, dist, si, sj, ei, ej)
-def bfs_2d(v, dist, si, sj, ei, ej):
-    q = deque()
-
-    q.append((si,sj))
-    v[si][sj]=dist
-
-    while q:
-        ci,cj = q.popleft()
-        if (ci,cj)==(ei,ej):
-            return v[ci][cj]
-
-        # 네방향, 범위내, (미방문)/조건맞으면(길이고, v[ci][cj]+1<v[ni][nj])
-        for di,dj in ((-1,0),(1,0),(0,-1),(0,1)):
-            ni,nj = ci+di, cj+dj
-            if 0<=ni<N and 0<=nj<N and arr[ni][nj]==0 and v[ci][cj]+1<v[ni][nj]:
-                q.append((ni,nj))
-                v[ni][nj]=v[ci][cj]+1
-
-    # 목적지를 찾을 수 없는 경우
-    return -1
-
-##########################################
-##########################################
 
 N, M, F = map(int, input().split())
-arr = [list(map(int, input().split())) for _ in range(N)]
-arr3 = [[list(map(int, input().split())) for _ in range(M)] for _ in range(5)]
-wall = [list(map(int,input().split())) for _ in range(F)]
+area = []
+for _ in range(N):
+    temp = list(map(int, input().split()))
+    area.append(temp)
 
-# [1] 주요위치들 찾기
-# 3차원 시작, 3차원 끝, 2차원 시작, 2차원 끝 좌표 탐색
-sk_3d, si_3d, sj_3d = find_3d_start()
-ei, ej = find_2d_end()
-ek_3d, ei_3d, ej_3d, si, sj = find_3d_end_2d_start()
+# 동 서 남 북 위
+time_faces = []
+for _ in range(5):
+    temp = []
+    for m in range(M):
+        temp.append(list(map(int, input().split())))
+    time_faces.append(temp)
+anomalies = []
 
-# [2] 3차원공간 탐색: 시작위치 -> 탈출위치거리 탐색(BFS 최단거리)
-dist = bfs_3d(sk_3d, si_3d, sj_3d,ek_3d, ei_3d, ej_3d)
+for _ in range(F):
+    r, c, d, v = map(int, input().split())
+    anomalies.append([r, c, d, v])
 
-# 동 서 남 북
-di=[ 0, 0, 1,-1]
-dj=[ 1,-1, 0, 0]
-if dist!=-1:
-    # [3] 2차원 탐색 준비: 시간이상현상 처리해서 v에 시간표시: BFS확산시 그보다 작으면 통과하게표시
-    v = [[401]*N for _ in range(N)]
-    for wi,wj,wd,wv in wall:        # wv 단위로 wd방향으로 확산표시(출구가 아닌경우만 확산)
-        v[wi][wj]=1
-        for mul in range(1, N+1):
-            wi,wj = wi+di[wd], wj+dj[wd]
-            if 0<=wi<N and 0<=wj<N and arr[wi][wj]==0 and (wi,wj)!=(ei,ej):
-                if v[wi][wj]>wv*mul:    # 더 큰 값 일때만 갱신(겹칠수있으니)
-                    v[wi][wj]=wv*mul
-            else:
-                break
 
-    # [4] 2차원 시작위치에서 BFS로 탈출구탐색(v에 적혀있는 값보다 작은 경우 지나감)
-    dist = bfs_2d(v, dist, si, sj, ei, ej)
+def rotate_left(arr):
+    size = len(arr)
+    new_arr = [[0] * size for _ in range(size)]
+    for i in range(size):
+        for j in range(size):
+            new_arr[size - 1 - j][i] = arr[i][j]
+    return new_arr
 
-print(dist)
+def rotate_right(arr):
+    size = len(arr)
+    new_arr = [[0] * size for _ in range(size)]
+    for i in range(size):
+        for j in range(size):
+            new_arr[j][size - 1 - i] = arr[i][j]
+
+    return new_arr
+
+def rotate_180(arr):
+    size = len(arr)
+    new_arr = [[0] * size for _ in range(size)]
+    for i in range(size):
+        for j in range(size):
+            new_arr[size - 1 - i][size - 1 - j] = arr[i][j]
+    return new_arr
+
+def paste(flat, piece, sy, sx):
+    # print(piece)
+    size = len(piece)
+    for i in range(size):
+        for j in range(size):
+            flat[sy + i][sx + j] = piece[i][j]
+
+# 전개도 만들기
+flat = [[-1] * (3 * M) for _ in range(3 * M)]
+east = rotate_left(time_faces[EAST])
+west = rotate_right(time_faces[WEST])
+north = rotate_180(time_faces[NORTH])
+south = time_faces[SOUTH]
+top = time_faces[TOP]
+
+paste(flat, west, M, 0)
+paste(flat, east, M, 2 * M)
+paste(flat, north, 0, M)
+paste(flat, south, 2 * M, M)
+paste(flat, top, M, M)
+
+# print(flat)
+
+def check_side(r, c):
+    if M <= r < 2 * M and 2 * M <= c < 3 * M:
+        return EAST
+    if M <= r < 2 * M and 0 <= c < M:
+        return WEST
+    if 2 * M <= r < 3 * M and M <= c < 2 * M:
+        return SOUTH
+    if 0 <= r < M and M <= c < 2 * M:
+        return NORTH
+    if M <= r < 2 * M and M <= c < 2 * M:
+        return TOP
+    return -1
+
+# 중요 
+def move_side(r, c):
+    side = check_side(r, c)
+    if side == EAST:
+        if r == M:
+            return 3 * M - c - 1, 2 * M - 1
+        if r == 2 * M - 1:
+            return c, 2 * M - 1
+    elif side == WEST:
+        if r == M:
+            return c, M
+        if r == 2 * M - 1:
+            return 3 * M - c - 1, M
+    elif side == SOUTH:
+        if c == 2 * M - 1:
+            return c, r
+        if c == M:
+            return 2 * M - 1, 3 * M - r - 1
+    elif side == NORTH:
+        if c == 2 * M - 1:
+            return M, 3 * M - r - 1
+        if c == M:
+            return M, r
+    return -1, -1
+
+def bfs_time_wall():
+    dist = [[INF] * (3 * M) for _ in range(3 * M)]
+    q = deque()
+
+    sy, sx = -1, -1
+
+    for i in range(3 * M):
+        for j in range(3 * M):
+            if flat[i][j] == TIME_MACHINE:
+                sy, sx = i, j
+    dist[sy][sx] = 0
+    q.append([sy, sx])
+
+    while q:
+        cy, cx = q.popleft()
+        for d in range(4):
+            ny = cy + dr[d]
+            nx = cx + dc[d]
+            if not (0 <= ny < 3 * M and 0 <= nx < 3 * M):
+                continue
+            if flat[ny][nx] == -1:
+                ny, nx = move_side(cy, cx)
+                if ny == -1:
+                    continue
+            if flat[ny][nx] == WALL:
+                continue
+            if dist[ny][nx] > dist[cy][cx] + 1:
+                dist[ny][nx] = dist[cy][cx] + 1
+                q.append([ny, nx])
+
+    return dist
+
+bfs_wall = bfs_time_wall()
+#print(bfs_wall)
+
+cube_r, cube_c = -1, -1
+
+for i in range(N):
+    for j in range(N):
+        if area[i][j] == CUBE:
+            cube_r, cube_c = i, j
+            break
+    if cube_r != -1:
+        break
+
+floor_exit_r, floor_exit_c = -1, -1
+wall_exit_r, wall_exit_c = -1, -1
+
+for k in range(M):
+    fr, fc = cube_r - 1, cube_c + k
+    wr, wc = 0, M + k
+
+    if 0 <= fr < N and 0 <= fc < N:
+        if area[fr][fc] in (EMPTY, EXIT):
+            floor_exit_r, floor_exit_c = fr, fc
+            wall_exit_r, wall_exit_c = wr, wc
+    fr, fc = cube_r + M, cube_c + k
+    wr, wc = 3 * M - 1, M + k
+    if 0 <= fr < N and 0 <= fc < N:
+        if area[fr][fc] in (EMPTY, EXIT):
+            floor_exit_r, floor_exit_c = fr, fc
+            wall_exit_r, wall_exit_c = wr, wc
+    fr, fc = cube_r + k, cube_c - 1
+    wr, wc = M + k, 0
+
+    if 0 <= fr < N and 0 <= fc < N:
+        if area[fr][fc] in (EMPTY, EXIT):
+            floor_exit_r, floor_exit_c = fr, fc
+            wall_exit_r, wall_exit_c = wr, wc
+    fr, fc = cube_r + k, cube_c + M
+    wr, wc = M + k, 3 * M - 1
+    if 0 <= fr < N and 0 <= fc < N:
+        if area[fr][fc] in (EMPTY, EXIT):
+            floor_exit_r, floor_exit_c = fr, fc
+            wall_exit_r, wall_exit_c = wr, wc
+
+
+time = bfs_wall[wall_exit_r][wall_exit_c]
+
+if time == INF:
+    print(-1)
+    sys.exit()
+
+floor_start_time = time + 1
+blocked_time = [[INF] * N for _ in range(N)]
+
+for r, c, d, v in anomalies:
+    t = 0
+
+    # 시작 위치도 막힌다고 처리
+    if blocked_time[r][c] > t:
+        blocked_time[r][c] = t
+
+    while True:
+        t += v
+        r += dr[d]
+        c += dc[d]
+
+        if not (0 <= r < N and 0 <= c < N):
+            break
+
+        # 이상현상은 빈 공간으로만 확산 가능하다고 보면 됨
+        if area[r][c] != EMPTY:
+            break
+
+        if blocked_time[r][c] > t:
+            blocked_time[r][c] = t
+
+
+def bfs_floor():
+    # 바닥으로 내려온 시작 칸이 이미 이상현상에 막혔으면 실패
+    if floor_start_time >= blocked_time[floor_exit_r][floor_exit_c]:
+        return -1
+
+    dist = [[INF] * N for _ in range(N)]
+    q = deque()
+
+    dist[floor_exit_r][floor_exit_c] = floor_start_time
+    q.append([floor_exit_r, floor_exit_c])
+
+    # 시작 칸이 바로 최종 출구인 경우
+    if area[floor_exit_r][floor_exit_c] == EXIT:
+        return floor_start_time
+
+    while q:
+        cy, cx = q.popleft()
+
+        for d in range(4):
+            ny = cy + dr[d]
+            nx = cx + dc[d]
+
+            if not (0 <= ny < N and 0 <= nx < N):
+                continue
+
+            # 바닥에서는 EMPTY 또는 EXIT만 이동 가능
+            if area[ny][nx] not in (EMPTY, EXIT):
+                continue
+
+            nt = dist[cy][cx] + 1
+
+            # 이상현상이 같은 시간 또는 더 먼저 도착한 칸이면 못 감
+            if nt >= blocked_time[ny][nx]:
+                continue
+
+            if dist[ny][nx] <= nt:
+                continue
+
+            dist[ny][nx] = nt
+
+            if area[ny][nx] == EXIT:
+                return nt
+
+            q.append([ny, nx])
+
+    return -1
+answer = bfs_floor()
+print(answer)
