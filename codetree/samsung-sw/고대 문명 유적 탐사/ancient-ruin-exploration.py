@@ -1,242 +1,148 @@
-# import sys
-# from collections import *
-# K, M = map(int, input().split())
-# grid = [[0]*5 for _ in range(5)]
+'''
+5x5 격자에서 7가지의 유물 조각 (1~7)
 
-# for i in range(5):
-#     grid[i] = list(map(int, input().split()))
-
-# num_list = list(map(int, input().split()))
-# num_list.reverse()
-
-# def is_range(r, c):
-#     if 0<=r<5 and 0<=c<5:
-#         return True
-#     return False
-
-# ###################################################################
-
-# # 90도, 180도, 270도 회전
-# def rotate(i, sr, sc, tgrid):
-#     for i in (1, 2,3):
-#         for r in range(3):
-#             for c in range(3):
-#                 tgrid[sr+c][sc+2-r] = tgrid[sr+r][sc+c]
-#     return tgrid
-
-
-# def bfs(tgrid, r, c, v):
-#     q = deque([(r,c)])
-#     v[r][c]=0
-#     cnt = 0
-#     total_cnt = 0
-#     glist = set((r, c))
-
-#     while q:
-#         cr, cc = q.popleft()
-#         k = tgrid[cr][cc]
-
-#         for dr, dc in ((-1,0), (1,0), (0,-1), (0,1)):
-#             nr, nc = cr+dr, cc+dc
-
-#             if is_range(nr, nc) and tgrid[nr][nc] == k and v[nr][nc]==-1:
-#                 cnt+=1
-#                 q.append((nr, nc))
-#                 v[nr][nc]=0
-#                 glist.add((nr, nc))
-#     if cnt>=3:
-#         total_cnt+=cnt
-#         total_glist.add(glist)
-
-#     return total_cnt, glist
-
-# # 획득가치 계산하기. bfs는 전체 맵에서 3개 이상 연결된 구역의 조각들 카운트
-# # 3*3 선택하고 그걸 bfs돌려서 획득가치>각도작은거>열작은거>행작은거 로 구역 픽스
-
-# def explore():
-#     fscore, fi, fc, fr = 0, 6, 6, 6
-#     v = [[-1]*5 for _ in range(5)]
-#     for r in range(3):
-#         for c in range(3):
-#             for i in range(3):
-#                 new_grid = [row[:] for row in grid]
-#                 temp_grid = rotate(i, r, c, new_grid)
-#                 score, glist = bfs(temp_grid, r, c, v)
-
-#                 if (score, -i, -c, -r)> (fscore, -fi, -fc, -fr):
-#                     fscore, fi, fc, fr = score, i, c, r
-#                     fglist = glist
-
-#     return fi, fc, fr, fscore, fglist
-
-
-
-# # 해당 구역들 열번호 작은순> 행번호 큰순으로 새로운 숫자들 채워넣기. 벽면 숫자 reverse 해서 pop하기
-# def get_treasure():
-#     total_score = 0
-#     fi, fc, fr, fscore, fglist = explore()
-#     newglist = []
-#     for r, c in fglist:
-#         newglist.append([c, -r])
-#     newglist.sort()
-#     for r, c in newglist:
-#         num = num_list.pop()
-#         grid[r][c] = num
-#     total_score+=fscore
-
-#     while True:
-#         v=[[-1]*5 for _ in range(5)]
-#         for r in range(5):
-#             for c in range(5):
-#                 score, glist = bfs(temp_grid, r, c, v)
-#                 if score ==0:
-#                     break
-
-#                 total_score+=score
-#                 newglist = []
-#                 for r, c in glist:
-#                     newglist.append([c, -r])
-#                 newglist.sort()
-#                 for r, c in newglist:
-#                     num = num_list.pop()
-#                     grid[r][c] = num
-
-#     return grid, total_score
-
-# while K:
-#     grid, total_score = get_treasure()
-#     if total_score>=3:
-#         print(total_score)
-#     else:
-#         break
-
-
+1. 탐사 진행
+    candidate_rotation()
+    - 회전 중심 좌표 (1,1 ~ 3,3)별로 90도 180도 270도 중 하나의 각도만큼 회전 했을때의 1차 획득 가치 도출 
+        - 이때 최대 가치 -> 회전 각도 -> 열이 가장 작은 구간 -> 행이 가장 작은 구간 대로 우선순위 
     
+    go_rotation()
+    - 앞서 뽑은 후보에 대해 회전 진행 
+
+2. 유물 획득
+    get_treasure()
+    - 방문하지 않은 칸에 대해 상하좌우로 인접한 같은 종류의 유물 조각이 3개 이상일 경우 가치 카운트 
+    - 총 가치 리턴하고 각 좌표들도 임시 격자에다가 false로 표시해두기
+
+    put_treasure()
+    - 조각이 사라진 위치에 새로운 조각 넣기 
+    - 열 번호 작은 순 -> 행 번호 큰 순 
+
+    + 유물 연쇄 힉득 (유물이 없을 때까지 반복)
         
+3. 탐사 반복
+    - 총 K번 턴에 걸쳐 진행 
+    - 각 턴마다 획득한 유물의 가치의 총합 출력 
+    - 1차 유물 획득에서 아무것도 없었다면 K번 못채워도 종료 
 
-# # 그리고 다시 그리드 bfs 검사해서 조각 카운트되면 또 없어지고 새로운 
+'''
+from collections import deque
+
+dx = [-1, 1, 0, 0]
+dy = [0, 0, -1, 1]
+
+def in_range(x, y):
+    return 0 <= x < 5 and 0 <= y < 5
 
 
+# 1. 유물 획득 및 가치 계산 함수
+def get_treasure(current_grid):
+    total_value = 0
+    is_treasure = [[False] * 5 for _ in range(5)]
+    visited = [[False] * 5 for _ in range(5)]
+    
+    for i in range(5):
+        for j in range(5):
+            if not visited[i][j]:
+                queue = deque([(i, j)])
+                visited[i][j] = True
+                group = [(i, j)] # 연결된 좌표들을 담을 리스트
+                
+                while queue:
+                    cx, cy = queue.popleft()
+                    
+                    for d in range(4):
+                        nx = cx + dx[d]
+                        ny = cy + dy[d]
+                        
+                        if in_range(nx, ny) and not visited[nx][ny] and current_grid[cx][cy] == current_grid[nx][ny]:
+                            queue.append((nx, ny))
+                            visited[nx][ny] = True
+                            group.append((nx, ny))
+                
+                # 3개 이상 연결되었다면 가치 추가 및 삭제 표시
+                if len(group) >= 3:
+                    total_value += len(group)
+                    for gx, gy in group:
+                        is_treasure[gx][gy] = True
+                        
+    return total_value, is_treasure
 
 
-import sys
-from collections import *
+# 2. 3x3 부분 격자 회전 함수
+def rotate_grid(original_grid, r, c, angle):
+    # 2차원 배열 깊은 복사 (deepcopy보다 빠름)
+    new_grid = [row[:] for row in original_grid]
+    
+    for _ in range(angle):
+        tmp_grid = [row[:] for row in new_grid]
+        for i in range(3):
+            for j in range(3):
+                # 90도 시계방향 회전 공식
+                new_grid[r-1+i][c-1+j] = tmp_grid[r+1-j][c-1+i]
+                
+    return new_grid
+
+
+# 3. 최적의 회전 후보 찾기 함수
+def candidate_rotation():
+    max_value = -1
+    best_grid = None
+    
+    # 우선순위: 1.회전각도(작은순) -> 2.열(작은순) -> 3.행(작은순)
+    for angle in range(1, 4):
+        for c in range(1, 4):
+            for r in range(1, 4):
+                rotated = rotate_grid(grid, r, c, angle)
+                val, _ = get_treasure(rotated)
+                
+                if val > max_value:
+                    max_value = val
+                    best_grid = rotated
+                    
+    return max_value, best_grid
+
+
+# 4. 빈 곳에 새로운 유물 조각 채우기 함수
+def put_treasure(current_grid, is_treasure):
+    # 열 번호가 작은 순 -> 행 번호가 큰 순
+    for c in range(5):
+        for r in range(4, -1, -1):
+            if is_treasure[r][c]:
+                # 큐가 비어있지 않을 때만 채움 (안전장치)
+                if wait_treasure:
+                    current_grid[r][c] = wait_treasure.popleft()
+
 
 K, M = map(int, input().split())
-grid = [[0]*5 for _ in range(5)]
-for i in range(5):
-    grid[i] = list(map(int, input().split()))
+grid = [list(map(int, input().split())) for _ in range(5)]
+wait_treasure = deque(list(map(int, input().split())))
 
-num_list = list(map(int, input().split()))
-num_list.reverse()
-
-def is_range(r, c):
-    if 0<=r<5 and 0<=c<5:
-        return True
-    return False
-
-###################################################################
-
-# 90도, 180도, 270도 회전 (i=1,2,3). tgrid를 직접 바꾸지 않고 새 grid를 리턴.
-def rotate(i, sr, sc, tgrid):
-    cur = [[tgrid[sr+r][sc+c] for c in range(3)] for r in range(3)]
-    for _ in range(i):
-        new = [[0]*3 for _ in range(3)]
-        for r in range(3):
-            for c in range(3):
-                new[r][c] = cur[2-c][r]
-        cur = new
-    result = [row[:] for row in tgrid]
-    for r in range(3):
-        for c in range(3):
-            result[sr+r][sc+c] = cur[r][c]
-    return result
-
-# 보드 전체(5x5)를 훑어서 3개 이상 연결된 모든 덩어리를 찾음
-# 리턴: (총 점수, 지워질 좌표 집합)
-def bfs(tgrid):
-    v = [[-1]*5 for _ in range(5)]
-    total_cnt = 0
-    total_glist = set()
-
-    for sr in range(5):
-        for sc in range(5):
-            if v[sr][sc] != -1:
-                continue
-            q = deque([(sr, sc)])
-            v[sr][sc] = 0
-            glist = {(sr, sc)}
-            k = tgrid[sr][sc]
-
-            while q:
-                cr, cc = q.popleft()
-                for dr, dc in ((-1,0), (1,0), (0,-1), (0,1)):
-                    nr, nc = cr+dr, cc+dc
-                    if is_range(nr, nc) and tgrid[nr][nc] == k and v[nr][nc] == -1:
-                        v[nr][nc] = 0
-                        glist.add((nr, nc))
-                        q.append((nr, nc))
-
-            if len(glist) >= 3:
-                total_cnt += len(glist)
-                total_glist |= glist
-
-    return total_cnt, total_glist
-
-# 획득가치 계산하기. bfs는 회전된 보드 전체에서 3개 이상 연결된 조각들 카운트
-# 3*3 선택하고 그걸 bfs돌려서 획득가치>각도작은거>열작은거>행작은거 로 구역 픽스
-def explore():
-    best = None  # (score, i, sc, sr), temp_grid, fglist
-
-    for sr in range(3):
-        for sc in range(3):
-            for i in (1, 2, 3):
-                temp_grid = rotate(i, sr, sc, grid)
-                score, glist = bfs(temp_grid)
-                if score == 0:
-                    continue
-                key = (-score, i, sc, sr)
-                if best is None or key < best[0]:
-                    best = (key, temp_grid, glist)
-
-    return best  # None이면 어떤 회전을 해도 유물을 못 얻는 것(탐사 종료 신호)
-
-# 지워진 자리들에 열번호 작은순 > 행번호 큰순으로 새 숫자 채워넣기
-def fill(g, glist):
-    newglist = []
-    for r, c in glist:
-        newglist.append([c, -r])
-    newglist.sort()
-    for c, nr in newglist:
-        r = -nr
-        g[r][c] = num_list.pop()
-
-def get_treasure():
-    global grid
-    best = explore()
-    if best is None:
-        return None  # 이번 턴은 유물을 하나도 못 얻음 -> 탐사 종료
-
-    _, temp_grid, fglist = best
-    grid = temp_grid          # 선택된 회전을 실제로 적용
-    total_score = 0
-
-    glist = fglist
-    while True:
-        score = len(glist)
-        if score == 0:
-            break
-        total_score += score
-        fill(grid, glist)
-        score, glist = bfs(grid)  # 채운 뒤 다시 검사 (연쇄)
-
-    return total_score
-
-results = []
-for _ in range(K):
-    total_score = get_treasure()
-    if total_score is None:
+# 메인 시뮬레이션
+for k in range(K):
+    # 1단계: 탐사 진행 (최적의 회전 찾기)
+    turn_val, next_grid = candidate_rotation()
+    
+    # 1차 획득에서 아무것도 얻지 못했다면 즉시 종료
+    if turn_val == 0:
         break
-    results.append(total_score)
-
-print(' '.join(map(str, results)))
+        
+    grid = next_grid # 최적의 격자로 업데이트
+    turn_total_value = 0
+    
+    # 2단계 & 3단계: 유물 획득 및 연쇄 작용
+    while True:
+        # 현재 격자에서 획득할 유물 찾기
+        val, is_treasure = get_treasure(grid)
+        
+        # 더 이상 터질 유물이 없으면 연쇄 종료
+        if val == 0:
+            break
+            
+        turn_total_value += val
+        
+        # 유물이 사라진 자리에 새로 채워넣기
+        put_treasure(grid, is_treasure)
+        
+    # 각 턴마다 획득한 총 가치 출력 (보통 공백 기준으로 출력합니다)
+    print(turn_total_value, end=" ")
