@@ -1,24 +1,25 @@
 def solution(genres, plays):
     answer = []
-    hash_map = {}
-    song_list = {}
+    summary_dict = {}
+    # {{'gen': 'pop', 'total': 170, 'list': [(-2500,2), (-2500,4)]},
+    # {'gen': 'pop', 'total': 170, 'list': [(-2500,2), (-2500,4)]},}
     
-    for idx, gen in enumerate(genres):
-        if gen not in hash_map:
-            hash_map[gen]= 0
-            song_list[gen] = []
-        hash_map[gen]+=plays[idx]
-        song_list[gen].append([plays[idx], idx])
+    for idx, (genre, play) in enumerate(zip(genres, plays)):
+        if genre not in summary_dict:
+            summary_dict[genre]= {
+                'total': 0, 
+                'list': []
+            }
+        summary_dict[genre]['total']+=play
+        summary_dict[genre]['list'].append((-play, idx))
+    
+    summary_dict = sorted(summary_dict.items(), key = lambda x: x[1]['total'], reverse=True)
+    for gen, info in summary_dict:
+        info['list'].sort(key=lambda x: x[0])
+    
+    for gen, info in summary_dict:
+        answer.append(info['list'][0][1])
+        if len(info['list'])>1:
+            answer.append(info['list'][1][1])
         
-    hash_map = sorted(hash_map.items(), key=lambda x: x[1], reverse=True)
-
-    for gen in song_list:
-        song_list[gen].sort(key = lambda x: (x[0], -x[1]))
-        
-    for genre, total in hash_map:
-        play, idx = song_list[genre].pop()
-        answer.append(idx)
-        if len(song_list[genre])>0:
-            play, idx = song_list[genre].pop()
-            answer.append(idx)
     return answer
