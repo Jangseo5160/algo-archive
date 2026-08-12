@@ -1,30 +1,19 @@
-import heapq
+from collections import deque
 
 def solution(n, roads, sources, destination):
     answer = []
-    
-    graph = [[]*2 for _ in range(n+1)]
+    graph = [[] for _ in range(n+1)]
     for a, b in roads:
         graph[a].append(b)
         graph[b].append(a)
+    q=deque([destination])
+    dist=[-1]*(n+1)
+    dist[destination]=0
+    while q:
+        cur = q.popleft()
+        for next_node in graph[cur]:
+            if dist[next_node]==-1:
+                dist[next_node] = dist[cur]+1
+                q.append(next_node)
     
-    INF = int(1e9)
-    dist = [INF] * (n+1)
-    
-    heap = [(0, destination)]
-    dist[destination] = 0
-    while heap:
-        cur_dist, cur_node = heapq.heappop(heap)
-        if cur_dist > dist[cur_node]:
-            continue
-        for next_node in graph[cur_node]:                    
-            new_dist = cur_dist + 1
-            if new_dist < dist[next_node]:
-                dist[next_node] = new_dist
-                heapq.heappush(heap, (new_dist, next_node))
-    for s in sources:
-        if dist[s]==INF:
-            answer.append(-1)
-        else:
-            answer.append(dist[s])
-    return answer
+    return [dist[s] for s in sources]
