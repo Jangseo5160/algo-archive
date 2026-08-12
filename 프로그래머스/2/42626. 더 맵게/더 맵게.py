@@ -3,17 +3,16 @@ import heapq
 def solution(scoville, K):
     answer = 0
     heapq.heapify(scoville)
-    cnt = 0
-    while True:
-        if scoville[0] >=K: 
-            return cnt
-        if len(scoville) ==1 and scoville[0]<K:
-            return -1
-        
-        new_score = heapq.heappop(scoville)
-        new_score += heapq.heappop(scoville) *2
-        # print(new_score)
-        # print(scoville)
+    
+    while len(scoville)>1:
+        first_min = heapq.heappop(scoville)
+        if first_min >= K:
+            return answer
+        second_min = heapq.heappop(scoville)
+        new_score = first_min + second_min*2
         heapq.heappush(scoville, new_score)
-        cnt+=1
-    return -1
+        answer+=1
+    
+    num = scoville.pop()
+    if num >=K: return answer
+    else: return -1
