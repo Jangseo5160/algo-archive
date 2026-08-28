@@ -1,17 +1,12 @@
+from collections import Counter
 def solution(k, tangerine):
-    answer = 0
-    tangerine.sort()
-    total = {}
-    for key in tangerine:
-        total[key] = total.get(key,0) +1
+    answer=0
+    cnts = Counter(tangerine)
     
-    total = sorted(total.items(), key=lambda x: x[1], reverse = True)
-    
-    for i in range(len(total)):
+    cnts = sorted(cnts.values(), reverse=True)
+    for c in cnts:
+        k-=c
+        answer+=1
+        
         if k<=0:
             return answer
-        else:
-            k-=total[i][1]
-            answer+=1
-    
-    return answer
