@@ -39,8 +39,7 @@ def move(cleaner, grid, i):
                 dist[nr][nc]=dist[cr][cc]+1
     if not candidates:
         return
-    candidates.sort()
-    _, new_r, new_c = candidates[0]
+    _, new_r, new_c = min(candidates)
     cleaner[i] = [new_r, new_c]
 
 
