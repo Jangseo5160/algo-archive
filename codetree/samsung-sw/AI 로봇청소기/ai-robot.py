@@ -1,5 +1,16 @@
 from collections import deque
-import sys
+
+# bfs
+# 이동거리 => dist -1로 초기화하고 배열 만들기, append 할 때, dist +1 업데이트,
+# dist가 -1이라면 한번도 방문하지 않았다는 의미라서, visited를 대신할 수 있긴하다
+
+# tuple 정렬, min
+# tuple로 변수별 최대 최소 정렬할때, sort를 써도 되고, min을 사용해도 된다.
+# tuple은 사전식 비교, lambda 쓸때는 2번째 원소 기준으로 정렬하고 싶을 때, min(arr, key = lambda x: x[1])
+
+# 반복되는 좌표 계산 함수화, 현재는 하드코딩됨,
+
+# 동시발생됨 => 원본 배열 얕은 복사
 
 N, K, L = map(int, input().split())
 grid = [ list(map(int, input().split())) for _ in range(N)]
@@ -39,15 +50,16 @@ def move(cleaner, grid, i):
                 dist[nr][nc]=dist[cr][cc]+1
     if not candidates:
         return
+    candidates.sort()
     _, new_r, new_c = min(candidates)
     cleaner[i] = [new_r, new_c]
 
 
 def clean(cleaner, grid):
+    possible = []
     nlist = []
     cleaner_set = set(map(tuple, cleaner))
     for r, c in cleaner:
-        possible = []
         # 오른쪽
         for d in range(4):
             total = 0
@@ -86,7 +98,7 @@ def clean(cleaner, grid):
         for tempr, tempc in nlist:
             if 0 <= tempr < N and 0 <= tempc < N and grid[tempr][tempc] > 0:
                 grid[tempr][tempc] = max(0, grid[tempr][tempc]-20)
-        
+        possible = []
 
 
 def accumulate(grid):
@@ -123,6 +135,6 @@ def main(grid, cleaner):
             for c in range(N):
                 if grid[r][c]>0:
                     total+=grid[r][c]
-
+        total = sum(grid[r][c] for r in range(N) for c in range(N) if grid[r][c]>0)
         print(total)
 main(grid, cleaner)
