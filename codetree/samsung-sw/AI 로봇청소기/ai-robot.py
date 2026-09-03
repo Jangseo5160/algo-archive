@@ -44,10 +44,10 @@ def move(cleaner, grid, i):
 
 
 def clean(cleaner, grid):
-    possible = []
     nlist = []
     cleaner_set = set(map(tuple, cleaner))
     for r, c in cleaner:
+        possible = []
         # 오른쪽
         for d in range(4):
             total = 0
@@ -86,7 +86,7 @@ def clean(cleaner, grid):
         for tempr, tempc in nlist:
             if 0 <= tempr < N and 0 <= tempc < N and grid[tempr][tempc] > 0:
                 grid[tempr][tempc] = max(0, grid[tempr][tempc]-20)
-        possible = []
+        
 
 
 def accumulate(grid):
