@@ -8,23 +8,19 @@ vector<int> solution(string s) {
     int convert_cnt = 0;
     int zero_cnt = 0;
     while(s!="1"){
-        int temp_zero_cnt = 0;
+        int one_cnt = 0;
         for(char c: s){
             if(c=='0'){
-                temp_zero_cnt+=1;
+                zero_cnt++;
             }
+            else one_cnt++;
         }
-        zero_cnt+=temp_zero_cnt;
-        convert_cnt+=1;
-        int n=s.size()-temp_zero_cnt;
-        string result = "";
-        while (n>0){
-            result = to_string(n%2) + result;
-            n/=2;
+        s = "";
+        while (one_cnt>0){
+            s = to_string(one_cnt%2) + s;
+            one_cnt/=2;
         }   
-        s=result;
+        convert_cnt+=1;
     }
-    answer.push_back(convert_cnt);
-    answer.push_back(zero_cnt);
-    return answer;
+    return {convert_cnt, zero_cnt}; //vector<int>
 }
