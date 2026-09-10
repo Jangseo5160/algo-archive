@@ -13,96 +13,85 @@ cells = {}
 board = [[-1]*N for _ in range(N)]
 dr = [-1,1,0,0]
 dc = [0,0,-1,1]
-
 for k in range(Q):
     r1,c1,r2,c2 = map(int, input().split())
     cells[k] = [r1,c1,r2,c2]
 
-def add_cell(k):
-    r1,c1,r2,c2 = cells[k]
+def add_cells(k):
+    r1, c1, r2, c2=cells[k]
     for i in range(r1, r2):
         for j in range(c1, c2):
-            board[i][j]=k
+            board[j][i] = k
+    # r1, c1, r2, c2
 
-def delete_if_seperate(board):
-    visited = [[False] * N for _ in range(N)]
-    group = []
+def remove_seperate(board):
+    visited=[[False]*N for _ in range(N)]
+    candidate = []
     for i in range(N):
         for j in range(N):
-            if board[i][j] !=-1 and not visited[i][j]:
+            if board[i][j]!=-1 and not visited[i][j]:
                 key = board[i][j]
-                group.append(key)
-                q = deque([(i, j)])
-                visited[i][j] = True
+                candidate.append(key)
+                q=deque([(i, j)])
+                visited[i][j]=True
                 while q:
                     r, c = q.popleft()
                     for d in range(4):
-                        nr, nc = r + dr[d], c + dc[d]
-                        if 0 <= nr < N and 0 <= nc < N and not visited[nr][nc]:
-                            if board[nr][nc] == key:
-                                visited[nr][nc]=True
-                                q.append((nr, nc))
-
-    counts = Counter(group)
-    candidate={k for k, cnt in counts.items() if cnt >1}
-
-    # 한개 이상이면 삭제
-    # k였던 좌표들 모두 -1로 채우기
-    if candidate:
+                        nr, nc = r+dr[d], c+dc[d]
+                        if 0<=nr<N and 0<=nc<N and board[nr][nc]==key and not visited[nr][nc]:
+                            q.append((nr, nc))
+                            visited[nr][nc]=True
+    can_list = Counter(candidate)
+    remove_dict = {k for k, cnt in can_list.items() if cnt>1}
+    if remove_dict:
         for i in range(N):
             for j in range(N):
-                if board[i][j] in candidate:
-                    board[i][j] = -1
+                if board[i][j] in remove_dict:
+                    board[i][j]=-1
 
-# 이동 순서 결정
-def order():
-    visited=[[-1]*N for _ in range(N)]
-    ordered = []
-    positions = {}
+def move_order():
+    order_list = []
+    positions={}
 
     for i in range(N):
         for j in range(N):
-            key = board[i][j]
-            if key!=-1:
+            if board[i][j]!=-1:
+                key = board[i][j]
                 if key not in positions:
-                    positions[key] =[]
+                    positions[key]=[]
                 positions[key].append((i, j))
+    order_list=sorted(positions, key=lambda k: (-len(positions[k]), k))
+    return order_list, positions
 
-    ordered = sorted(positions, key = lambda k: (-len(positions[k]),k))
-    return ordered, positions
-
-def move_cell():
-    new_board= [[-1]*N for _ in range(N)]
-    ordered, positions = order()
-    for key in ordered:
-        coords = positions[key]
-        min_r = min(r for r, c in coords)
-        min_c = min(c for r, c in coords)
-
-        shape = [(r-min_r, c-min_c) for r, c in coords]
-
-        r_size = max(r for r, c in shape) +1
-        c_size = max(c for r, c in shape) +1
-        placed = False
-        for r in range(N-r_size+1):
-            for c in range(N-c_size+1):
+def move_cells():
+    order_list, positions = move_order()
+    new_board=[[-1]*N for _ in range(N)]
+    for key in order_list:
+        min_r = min(r for r, c in positions[key])
+        min_c = min(c for r, c in positions[key])
+        shape = [(r-min_r, c-min_c) for r, c in positions[key]]
+        r_size = max(r for r, c in shape)+1
+        c_size = max(c for r, c in shape)+1
+        is_placed = False
+        for i in range(N-c_size+1):
+            for j in range(N-r_size+1):
                 can_place = True
-                for rr, cc in shape:
-                    if new_board[r+rr][c+cc] !=-1:
-                        can_place=False
+                for (r, c) in shape:
+                    if new_board[j+r][i+c]!=-1:
+                        can_place = False
                         break
                 if can_place:
-                    for rr, cc in shape:
-                        new_board[r+rr][c+cc] = key
-                    placed = True
+                    for (r, c)in shape:
+                        new_board[j+r][i+c] = key
+                    is_placed = True
                     break
-            if placed:
+            if is_placed:
                 break
     return new_board
 
-def calculate_score():
+def score():
     area = [0]*Q
-    pairs=set()
+    pair = set()
     for r in range(N):
         for c in range(N):
             key = board[r][c]
@@ -111,17 +100,14 @@ def calculate_score():
                 for d in range(4):
                     nr, nc = r+dr[d], c+dc[d]
                     if 0<=nr<N and 0<=nc<N and board[nr][nc]!=-1 and board[nr][nc]!=key:
-                        pairs.add((min(key, board[nr][nc]), max(key, board[nr][nc])))
-    score= 0
-    for a,b in pairs:
-        score += area[a]*area[b]
+                        pair.add((min(key,board[nr][nc]), max(key, board[nr][nc])))
+    score = 0
+    for a, b in pair:
+        score += area[a] * area[b]
     return score
 
-
 for k in range(Q):
-    add_cell(k)
-    delete_if_seperate(board)
-    board = move_cell()
-    print(calculate_score())
-
-
+    add_cells(k)
+    remove_seperate(board)
+    board = move_cells()
+    print(score())
