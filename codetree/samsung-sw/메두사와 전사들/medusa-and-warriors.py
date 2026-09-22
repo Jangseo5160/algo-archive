@@ -1,5 +1,4 @@
 from collections import deque
-from multiprocessing.resource_sharer import stop
 
 # 집 -> 산책, 집은 Sr, Sc, 공원은 Er, Ec
 # 도로는 0, 도로 아니면 1
