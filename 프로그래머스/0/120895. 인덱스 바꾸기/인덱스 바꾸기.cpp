@@ -5,16 +5,6 @@ using namespace std;
 
 string solution(string my_string, int num1, int num2) {
     string answer = "";
-    for(int i=0; i<my_string.size();i++){
-        if(i==num2){
-            answer+=my_string[num1];
-        }
-        else if (i==num1){
-            answer+=my_string[num2];
-        }
-        else{
-            answer+=my_string[i];
-        }
-    }
-    return answer;
+    swap(my_string[num1], my_string[num2]);
+    return my_string;
 }
