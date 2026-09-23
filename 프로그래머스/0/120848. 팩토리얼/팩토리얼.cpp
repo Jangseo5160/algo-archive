@@ -7,13 +7,15 @@ int solution(int n) {
     int answer = 0;
     int temp = 1;
     int i=1;
-    while (temp <= n){
-        i++;        
-        temp*=i;
-    }
-    
-    // for(int i=1; i<11; i++){
-    //     if
+    // while (temp <= n){
+    //     temp*=i;
+    //     i++;        
     // }
-    return i-1;
+    
+    for(int i =1; i<11; i++){
+        temp*=i;
+        if(temp>n){
+            return i-1;
+        }
+    }
 }
