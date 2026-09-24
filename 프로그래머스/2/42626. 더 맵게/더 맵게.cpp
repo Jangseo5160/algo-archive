@@ -9,21 +9,14 @@ int solution(vector<int> scoville, int K) {
     priority_queue<int, vector<int>, greater<int>> pq;
     for(auto a: scoville) pq.push(a);
     int cnt=0;
-    while(!pq.empty()){
-        if(pq.top()<K){
-            int b = pq.top();
-            pq.pop();
-            
-            if(pq.empty()) return -1;
-            
-            int c = pq.top();
-            pq.pop();
-            pq.push(b+c*2);
-            cnt++;
-
-        }
-        else{
-            return cnt;
-        }
+    while(pq.top()<K){
+        if(pq.size()==1) return -1;
+        int b = pq.top();
+        pq.pop();           
+        int c = pq.top();
+        pq.pop();
+        pq.push(b+c*2);
+        cnt++;
     }
+    return cnt;
 }
