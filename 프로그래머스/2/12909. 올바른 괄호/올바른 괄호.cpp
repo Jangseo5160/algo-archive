@@ -1,17 +1,24 @@
 #include<string>
 #include <iostream>
+#include <stack>
 
 using namespace std;
 
 bool solution(string s)
 {
     bool answer = true;
-	int n=0;
-    for(int i=0; i<s.size(); i++){
-        if(n<0) return false;
-        else if (s[i]=='(') n+=1;
-        else if (s[i]==')') n-=1;
-     }
-    if(n==0) return true;
-    else return false;
+    stack <char> stk;
+    for(auto c:s){
+        if(c=='(' || stk.empty()){
+            stk.push(c);
+        }
+        else{
+            if(stk.empty()) return false;
+            else{
+                stk.pop();
+            }
+        }
+    }
+    if(stk.empty()) return true;
+    return false;
 }
