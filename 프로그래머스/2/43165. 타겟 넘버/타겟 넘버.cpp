@@ -1,22 +1,30 @@
 #include <string>
 #include <vector>
-
+#include <queue>
 using namespace std;
-
-int dfs(vector<int> numbers, int target, int idx, int sum){
-    if(idx == numbers.size()){
-        if(sum ==target){
-           return 1; 
-        }
-        return 0;
-    }
-    int count = 0;
-    count += dfs(numbers, target, idx+1, sum+numbers[idx]);
-    count += dfs(numbers, target, idx+1, sum-numbers[idx]);
-    return count;
-}
+vector<bool> visited; 
 
 
 int solution(vector<int> numbers, int target) {
-    return dfs(numbers, target, 0,0);
+    int answer = 0;
+    queue<int> q;
+    q.push(0);
+    
+    for(int num: numbers){
+        int size = q.size();
+        
+        for(int i=0; i<size; i++){           
+            q.push(q.front()+num);
+            q.push(q.front()-num);
+            q.pop();
+        }
+    }
+    while(!q.empty()){
+        int x = q.front();
+        if(x==target){
+            answer++;
+        }
+        q.pop();
+    }
+    return answer;
 }
