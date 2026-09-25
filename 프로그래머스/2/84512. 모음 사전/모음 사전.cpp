@@ -20,7 +20,7 @@ void dfs(string curr, const string& word ){
 
     for(auto a: alpha){
         dfs(curr+a, word);
-        if(answer!=0) return;
+        // if(answer!=0) return;
     }
 }
 
