@@ -1,30 +1,20 @@
 #include <string>
 #include <vector>
-#include <queue>
-using namespace std;
-vector<bool> visited; 
 
+using namespace std;
+int answer = 0;
+
+void bfs(vector<int>& numbers, int target, int idx, int sum){
+    if(idx==numbers.size()){
+        if(sum==target) answer++;
+        return;
+    }
+    bfs(numbers, target, idx+1, sum+numbers[idx]);
+    bfs(numbers, target, idx+1, sum-numbers[idx]);
+
+}
 
 int solution(vector<int> numbers, int target) {
-    int answer = 0;
-    queue<int> q;
-    q.push(0);
-    
-    for(int num: numbers){
-        int size = q.size();
-        
-        for(int i=0; i<size; i++){           
-            q.push(q.front()+num);
-            q.push(q.front()-num);
-            q.pop();
-        }
-    }
-    while(!q.empty()){
-        int x = q.front();
-        if(x==target){
-            answer++;
-        }
-        q.pop();
-    }
+    bfs(numbers, target, 0, 0);
     return answer;
 }
