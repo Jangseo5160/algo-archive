@@ -27,7 +27,6 @@ int solution(int distance, vector<int> rocks, int n) {
             }
         }
         if(cnt<=n){
-            answer=mid;
             left=mid+1;
 
         }
@@ -35,5 +34,5 @@ int solution(int distance, vector<int> rocks, int n) {
             right=mid-1;
         }
     }
-    return answer;
+    return right;
 }
