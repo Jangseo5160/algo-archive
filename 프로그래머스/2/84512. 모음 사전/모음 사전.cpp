@@ -2,31 +2,31 @@
 #include <vector>
 
 using namespace std;
-vector<string> alpha = {"A", "E", "I", "O", "U"};
+int cnt=0;
+vector<char> w = {'A', 'E', 'I', 'O', 'U'};
+bool found = false;
 int answer = 0;
-int cnt =0;
 
-void dfs(string curr, const string& word ){
-    if(curr.size()>5){
+void dfs(string& word, string curr){
+    if(found) return;
+    
+    if(curr.size()==5){
         return;
     }
-    if(!curr.empty()){
+    for(auto a:w){
+        string next = curr+a;
         cnt++;
-        if(curr == word){
+        if(next==word){
             answer=cnt;
+            found=true;
             return;
         }
-    }
-
-    for(auto a: alpha){
-        dfs(curr+a, word);
-        // if(answer!=0) return;
+         dfs(word, next);
     }
 }
 
 
 int solution(string word) {
-    dfs("", word);
-    
+    dfs(word, "");
     return answer;
 }
