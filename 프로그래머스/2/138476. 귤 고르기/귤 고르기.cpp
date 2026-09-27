@@ -1,30 +1,25 @@
 #include <string>
 #include <vector>
-
+#include <unordered_map>
+#include <algorithm>
 using namespace std;
 
 int solution(int k, vector<int> tangerine) {
-    vector<int> cnt(10000001,0);
-    for(int x:tangerine){
-        cnt[x]++;
+    int answer = 0;
+    unordered_map<long long, int> m;
+    for(auto t:tangerine){
+        m[t]++;
     }
-    vector<int> frequency(tangerine.size()+1, 0);
-    for(int x: cnt){
-        if(x>0){
-            frequency[x]++;
-        }
+    vector<int> cnt;
+    for(auto& [key, v]:m){
+        cnt.push_back(v);
     }
-    int answer=0;
-    for(int i = tangerine.size(); i>=1; i--){
-        while (frequency[i]>0){
-            k-=i;
-            answer++;
-            frequency[i]--;
-            
-            if(k<=0){
-                return answer;
-            }
-        }
+    sort(cnt.rbegin(), cnt.rend());
+    int i=0;
+    while(k>0){
+        k-=cnt[i];
+        answer++;
+        i++;
     }
     return answer;
 }
