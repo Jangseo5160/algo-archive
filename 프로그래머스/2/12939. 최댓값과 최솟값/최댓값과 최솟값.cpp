@@ -13,7 +13,7 @@ string solution(string s) {
         if(a==' '){
             answ.push_back(stoi(temp));
             cout<<temp<<" ";
-            temp="";
+            temp.clear();
         }
         else{
             temp+=a;
