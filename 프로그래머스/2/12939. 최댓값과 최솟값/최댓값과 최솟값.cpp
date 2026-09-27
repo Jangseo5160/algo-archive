@@ -1,27 +1,30 @@
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 using namespace std;
 
 string solution(string s) {
     string answer = "";
-    vector<int> nums;
-    string temp = "";
-    for (char c:s){
-        if (c==' '){
-            nums.push_back(stoi(temp));
+    vector<int> answ;
+    string temp="";
+    for(auto a: s){
+        if(a==' '){
+            answ.push_back(stoi(temp));
+            cout<<temp<<" ";
             temp="";
         }
         else{
-            temp+=c;
+            temp+=a;
         }
     }
-    nums.push_back(stoi(temp));
-    int min_val = nums[0];
-    int max_val = nums[0];
-    for (int num:nums){
-        if(num>max_val) max_val = num;
-        if(num<min_val) min_val = num;
-    }
-    return to_string(min_val) + " " + to_string(max_val);
+    answ.push_back(stoi(temp));
+    cout<<temp<<" ";
+    int min_v=*min_element(answ.begin(), answ.end());
+    int max_v=*max_element(answ.begin(), answ.end());
+    answer+=to_string(min_v);
+    answer+=" ";
+    answer+=to_string(max_v);
+    return answer;
 }
