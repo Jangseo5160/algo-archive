@@ -1,11 +1,7 @@
 #include <string>
 #include <vector>
-#include <set>
-
+#include <unordered_set>
 using namespace std;
-int answer = 0;
-vector <bool> visited;
-set<int> every_nums;
 
 bool isPrime(int a){
     if(a<2) return false;
@@ -14,33 +10,28 @@ bool isPrime(int a){
     }
     return true;
 }
+unordered_set <int> group;
 
-void dfs(string& numbers, string num){
-    if(!num.empty()){
-        every_nums.insert(stoi(num));
+
+void dfs(string s, string& numbers, vector<bool> v){
+    if(s.size()>0){
+        group.insert(stoi(s));
     }
-    
     for(int i=0; i<numbers.size(); i++){
-        if(!visited[i]){
-            visited[i]=true;
-            dfs(numbers, num+numbers[i]);
-            visited[i]=false;
+        if(!v[i]){
+            v[i]=true;
+            dfs(s+numbers[i], numbers, v);
+            v[i]=false;
         }
-        
     }
 }
 
 int solution(string numbers) {
     int answer = 0;
-    visited.assign(numbers.size(), false);
-
-    dfs(numbers, "");
-    
-    for(int n:every_nums){
-        if (isPrime(n)){
-            answer++;
-        }
+    vector<bool> v(numbers.size()+1, false);
+    dfs("", numbers, v);
+    for(auto a: group){
+        if(isPrime(a)) answer++;
     }
-    
     return answer;
 }
