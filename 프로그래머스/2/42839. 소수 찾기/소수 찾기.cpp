@@ -1,37 +1,37 @@
 #include <string>
 #include <vector>
-#include <unordered_set>
-using namespace std;
+#include <algorithm>
+#include <set>
 
-bool isPrime(int a){
-    if(a<2) return false;
-    for(int i=2; i*i<=a; i++){
-        if(a%i==0) return false;
+using namespace std;
+bool isPrime(int n) {
+    if (n < 2)
+        return false;
+
+    for (int i = 2; i * i <= n; i++) {
+        if (n % i == 0)
+            return false;
     }
+
     return true;
 }
-unordered_set <int> group;
-
-
-void dfs(string s, string& numbers, vector<bool> v){
-    if(s.size()>0){
-        group.insert(stoi(s));
-    }
-    for(int i=0; i<numbers.size(); i++){
-        if(!v[i]){
-            v[i]=true;
-            dfs(s+numbers[i], numbers, v);
-            v[i]=false;
-        }
-    }
-}
-
 int solution(string numbers) {
     int answer = 0;
-    vector<bool> v(numbers.size()+1, false);
-    dfs("", numbers, v);
-    for(auto a: group){
-        if(isPrime(a)) answer++;
+    set<int> nums;
+    vector<int> order;
+    sort(numbers.begin(), numbers.end());
+    do{
+        int num=0;
+        for(char c:numbers){
+            num = num*10 + (c-'0');
+            nums.insert(num);
+        }
+        
+    }while(next_permutation(numbers.begin(), numbers.end()));
+    
+    for(auto n:nums){
+        if(isPrime(n)) answer++;
     }
+    
     return answer;
 }
