@@ -24,6 +24,6 @@ long long solution(int n, vector<int> times) {
         }
         if(left==right) break;
     }
-    answer=left;
+    answer=right;
     return answer;
 }
