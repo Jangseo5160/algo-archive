@@ -15,17 +15,16 @@ int solution(vector<int> priorities, int location) {
     }
     
     while(!q.empty()){
-        if(priorities[q.front()] ==max_v){
+        int cur = q.front();
+        q.pop();
+        if(priorities[cur] ==max_v){
             answer++;
-            if(q.front() == location) return answer;
-            priorities[q.front()] = -1;
-            q.pop();
+            if(cur == location) return answer;
+            priorities[cur] = -1;
             max_v=*max_element(priorities.begin(), priorities.end());
         }
-        else if(priorities[q.front()]<max_v){
-            int temp = q.front();
-            q.pop();
-            q.push(temp);
+        else if(priorities[cur]<max_v){
+            q.push(cur);
         }
     }
     
