@@ -7,18 +7,19 @@ using namespace std;
 bool solution(string s)
 {
     bool answer = true;
-    stack <char> stk;
+    stack<char> stk;
+    
     for(auto c:s){
-        if(c=='(' || stk.empty()){
+        if(c=='('){
             stk.push(c);
         }
         else{
             if(stk.empty()) return false;
             else{
-                stk.pop();
+                if(stk.top()=='(') stk.pop();
             }
         }
     }
     if(stk.empty()) return true;
-    return false;
+    else return false;
 }
