@@ -1,38 +1,37 @@
 #include <string>
 #include <vector>
-#include <cmath>
-#include <iostream>
 #include <algorithm>
+
 using namespace std;
 
 int solution(int distance, vector<int> rocks, int n) {
-    long long answer = 0;
-    long long left = 0;
-    long long right = distance;
-    
+    int answer = 0;
     rocks.push_back(distance);
+    rocks.push_back(0);
     sort(rocks.begin(), rocks.end());
-    
+    int right = distance;
+    int left = 0;
     while(left<=right){
-        long long mid = (left+right)/2;
-        long long cnt=0;
-        long long prev = 0;
+        int mid = (left+right)/2;
+        int cnt=0;
+        int prev=0;
         
-        for(int i=0; i<rocks.size(); i++){
-            if((rocks[i]-prev)<mid){
+        for(int i=1; i<rocks.size(); i++){
+            int cur = rocks[i];
+            if(cur-prev<mid){
                 cnt++;
             }
             else{
-                prev = rocks[i];
+                prev=cur;
             }
         }
         if(cnt<=n){
             left=mid+1;
-
         }
         else{
             right=mid-1;
         }
     }
-    return right;
+    answer=right;
+    return answer;
 }
