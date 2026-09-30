@@ -1,26 +1,28 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
 long long solution(int n, vector<int> times) {
     long long answer = 0;
-    long long left = 0;
-    long long right = *max_element(times.begin(), times.end());
-    right *= n;
+    long long right = (long long)(*max_element(times.begin(), times.end())) * n;
+    long long left=0;
+    
     while(left<=right){
-        long long mid = (left+right)/2;
+        long long mid=(right+left)/2;
         long long cnt=0;
         for(auto t:times){
             cnt+=mid/t;
         }
-        if(cnt<n){
-            left=mid+1;
-        }
-        else{
+        if(cnt>=n){
             right=mid-1;
         }
+        else{
+            left=mid+1;
+        }
     }
-    return left;
+    answer=left;
+    return answer;
 }
