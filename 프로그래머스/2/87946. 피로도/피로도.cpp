@@ -1,26 +1,26 @@
 #include <string>
 #include <vector>
-
+#include <algorithm>
 using namespace std;
-vector<bool> visited;
-int answer = 0;
-
-void dfs(int k,vector<vector<int>> dungeons, int cnt){
-    answer = max(answer, cnt);
-    
-    for(int i=0; i<dungeons.size(); i++){
-        if(!visited[i] && dungeons[i][0]<=k){
-            visited[i]=true;
-            dfs(k-dungeons[i][1], dungeons, cnt+1);
-            visited[i]=false;
-        }
-    }
-    
-}
-
 
 int solution(int k, vector<vector<int>> dungeons) {
-    visited.assign(dungeons.size(), false);
-    dfs(k, dungeons, 0);
+    int answer = -1;
+    vector<int> order(dungeons.size());
+    for(int i=0; i<order.size(); i++)
+        order[i]=i;
+    
+    do{
+        int cur=k;
+        int cnt=0;
+        for(int idx:order){
+            if(cur>=dungeons[idx][0]){
+                cur-=dungeons[idx][1];
+                cnt++;
+            }
+        }
+        answer=max(answer, cnt);
+    }while(next_permutation(order.begin(), order.end()));
+    
+    
     return answer;
 }
