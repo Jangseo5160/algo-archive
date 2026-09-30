@@ -1,24 +1,25 @@
 #include <string>
 #include <vector>
-#include <stack>
-
+#include<stack>
+#include<iostream>
 using namespace std;
 
 vector<int> solution(vector<int> prices) {
     vector<int> answer(prices.size(), 0);
-    stack<int> s;
+    stack<int> stk;
     for(int i=0; i<prices.size(); i++){
-        while(!s.empty() && prices[s.top()]>prices[i]){
-            int idx = s.top();
-            s.pop();
-            answer[idx] = i-idx;
+        if(stk.empty() || prices[stk.top()]<=prices[i])  stk.push(i);
+        else{
+            while(!stk.empty() && prices[stk.top()]>prices[i]){
+                answer[stk.top()]=i-stk.top();
+                stk.pop();
+            }
+            stk.push(i);
         }
-        s.push(i);
     }
-    while(!s.empty()){
-        int idx = s.top();
-        s.pop();
-        answer[idx] = prices.size()-1-idx;
+    while(!stk.empty()){
+        answer[stk.top()] = prices.size()-stk.top()-1;
+        stk.pop();
     }
     return answer;
 }
