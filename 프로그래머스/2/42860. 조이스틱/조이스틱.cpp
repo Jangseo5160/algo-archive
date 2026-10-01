@@ -5,23 +5,21 @@ using namespace std;
 
 int solution(string name) {
     int answer = 0;
-    
-    for(auto n:name){
-        int up = n-'A';
-        int down = 'Z'-n+1;
-        answer+=min(up, down);
+    for(auto a:name){
+        answer += min(a - 'A', 'Z'-a+1);
     }
-    int move = name.size()-1;
-    
-    for(int i=0; i<name.size(); i++){
-        int next = i+1;
-        while(next<name.size() && name[next]=='A'){
-            next++;
+    int n= name.size();
+    int dist = n-1;
+    for(int i=0; i<n; i++){
+        int j=i+1;
+        if(name[j]=='A'){
+            while(name[j]=='A')
+                j++;
         }
-        int left_back = (name.size()-next)*2 + i;
-        int right_back = i+i+name.size()-next;
-        move = min(move, min(left_back, right_back));
+        int left_back = i*2 + n-j;
+        int right_back = (n-j)*2 + i;
+        dist = min(min(left_back,right_back), dist);
     }
-    answer+=move;
+    answer+=dist;
     return answer;
 }
