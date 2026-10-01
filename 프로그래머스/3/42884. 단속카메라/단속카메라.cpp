@@ -7,7 +7,12 @@ using namespace std;
 
 int solution(vector<vector<int>> routes) {
     int answer = 0;
-    sort(routes.begin(), routes.end(), [](vector<int>a, vector<int>b){return a[1]<b[1];});
+    sort(routes.begin(), routes.end(), [](const vector<int>& a, const vector<int>& b){
+if(a[1]==b[1]) return a[0]<b[0];
+
+return a[1]<b[1];
+
+});
     // for(auto c:routes){
     //     cout<<"    "<<c[0] << " "<<c[1];
     // }
