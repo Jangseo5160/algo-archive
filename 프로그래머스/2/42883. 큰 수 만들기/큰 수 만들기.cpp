@@ -2,27 +2,20 @@
 #include <vector>
 #include <stack>
 #include <algorithm>
-#include <iostream>
-
 using namespace std;
 
 string solution(string number, int k) {
     string answer = "";
     stack<char> stk;
     for(auto n:number){
-        if(stk.empty() || stk.top()>=n || k<=0){
-            stk.push(n);
+        while(!stk.empty() && stk.top()<n && k>0){
+            stk.pop();
+            k--;
         }
-        else{
-            while(!stk.empty() && stk.top()<n && k>0){
-                stk.pop();
-                k--;
-            }
-            stk.push(n);
-        }
-        
+        stk.push(n);
     }
-    while(k>0){
+    
+    while(!stk.empty() && k>0){
         stk.pop();
         k--;
     }
@@ -30,7 +23,7 @@ string solution(string number, int k) {
         answer+=stk.top();
         stk.pop();
     }
-    reverse(answer.begin(), answer.end());
     
+    reverse(answer.begin(), answer.end());
     return answer;
 }
