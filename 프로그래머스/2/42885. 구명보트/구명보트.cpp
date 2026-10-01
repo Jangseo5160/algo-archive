@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
 using namespace std;
 
 int solution(vector<int> people, int limit) {
@@ -10,11 +9,19 @@ int solution(vector<int> people, int limit) {
     int left = 0;
     int right = people.size()-1;
     while(left<=right){
-        if(people[left]+people[right]<=limit){
-            left++;
+        if(left==right){
+            answer++;
+            break;
         }
-        answer++;
-        right--;
+        if(people[left]+people[right]<=limit){
+            answer++;
+            left++;
+            right--;
+        }
+        else{
+            answer++;
+            right--;
+        }
     }
     return answer;
 }
