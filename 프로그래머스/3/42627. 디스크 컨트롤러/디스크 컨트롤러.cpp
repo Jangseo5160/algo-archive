@@ -1,40 +1,34 @@
 #include <string>
 #include <vector>
-#include<queue>
-#include<algorithm>
+#include <queue>
+#include <algorithm>
 #include<iostream>
 using namespace std;
 
 int solution(vector<vector<int>> jobs) {
     int answer = 0;
-    priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> pq;
-    sort(jobs.begin(), jobs.end());
-    int i=0;
-    int now =0;
-    while(i<jobs.size() || !pq.empty()){
-        if(pq.empty() && i<jobs.size())
-            now = max(now, jobs[i][0]);
+    priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> ready_q;  //min heap
+    priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> q; //min heap
 
-        while(i<jobs.size() && jobs[i][0]<=now){
-            pq.push({jobs[i][1], jobs[i][0], i});
-            i++;
+    for(int i=0; i<jobs.size(); i++){
+        ready_q.push({jobs[i][0], jobs[i][1], i}); //요청시간, 수행시간, idx
+    }
+    int now=0;
+    while(!ready_q.empty() || !q.empty()){
+        while(!ready_q.empty() && ready_q.top()[0]<=now){
+            q.push({ready_q.top()[1],ready_q.top()[0], ready_q.top()[2]}); //수행시간, 요청시간, idx
+            ready_q.pop();
         }
-        
-        if(!pq.empty()){
-            vector<int> new_j = pq.top();
-            pq.pop();
-            
-            now += new_j[0];
-            answer+=(now-new_j[1]);
+        if(q.empty()){
+           now=ready_q.top()[0];
+            continue;
         }
+        answer+= (now+q.top()[0] - q.top()[1]);
+        now +=q.top()[0];
+        q.pop();
     }
     
-    while(!pq.empty()){
-        vector<int> new_j = pq.top();
-        pq.pop();
-        now += new_j[0];
-        answer+=(now-new_j[1]);
-    }
-    answer=answer/jobs.size();
+    
+    answer/=jobs.size();
     return answer;
 }
