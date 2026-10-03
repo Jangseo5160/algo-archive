@@ -22,7 +22,7 @@ vector<int> solution(vector<string> operations) {
         }
     }
     if(s.empty()) return {0,0};
-    answer = {*prev(s.end()), *s.begin()};
+    answer = {*(s.rbegin()), *s.begin()};
     return answer;
     // int a=*s.rbegin();
     // cout<<a<<" ";
