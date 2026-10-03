@@ -1,28 +1,29 @@
 #include <string>
 #include <vector>
-
+#include<stack>
 using namespace std;
-int answer=0;
-string ori="AEIOU";
-int cnt=0;
-void dfs(string s, const auto& word){
-    if(s.size()>5) return;
-    
-    if(!s.empty()){
-        cnt++;
-        if(s==word) {
-            answer=cnt;
-            return;
+
+int solution(string word) {
+    int answer = 0;
+    stack<string> stk;
+    string ori="AEIOU";
+    int cnt=0;
+    stk.push("");
+    while(!stk.empty()){
+        string cur=stk.top();
+        stk.pop();
+        
+        if(cur.size()>5){
+            continue;
+        }
+        if(!cur.empty()){
+            cnt++;
+            if(cur==word) return cnt;
+        }
+        for(int i=4; i>=0; i--){
+            stk.push(cur+ori[i]);
         }
     }
     
-    for(auto c:ori){
-        dfs(s+c, word);
-    }
-}
-
-
-int solution(string word) {
-    dfs("", word);
     return answer;
 }
