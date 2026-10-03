@@ -1,29 +1,34 @@
 #include <string>
 #include <vector>
-#include <set>
+#include<set>
+
 using namespace std;
+
 int solution(int N, int number) {
     int answer = 0;
-    int repeat = 0;
     vector<set<int>> dp(9);
-    
-    for(int i=1; i<=8; i++){
-        repeat = repeat*10 +N;
-        dp[i].insert(repeat);
+    int temp=0;
+    for(int i=1; i<9; i++){
+        temp=temp*10+N; //5, 55, 555, 55555555
+        dp[i].insert(temp);
     }
     for(int i=1; i<9; i++){
-        for(int j=1; j<i; j++){
-            for(auto a1: dp[j]){
-                for(auto b1: dp[i-j]){
-                    dp[i].insert(a1+b1);
-                    if(a1>b1)   dp[i].insert(a1-b1);
-                    else    dp[i].insert(-a1+b1);
-                    dp[i].insert(a1*b1);
-                    if(b1!=0) dp[i].insert(a1/b1);
+        for(int j=1; j<9; j++){
+            if(i+j<9){
+                for(auto num1:dp[i]){
+                    for(auto num2:dp[j]){
+                        dp[i+j].insert(num1+num2);
+                        dp[i+j].insert(num1*num2);
+                        dp[i+j].insert(num1-num2);
+                        if(num2!=0)
+                            dp[i+j].insert(num1/num2);
+                    }
                 }
             }
         }
-        if(dp[i].find(number)!=dp[i].end()) return i;
+    }
+    for(int i=1; i<9; i++){
+        if(dp[i].contains(number)) return i;
     }
     
     return -1;
