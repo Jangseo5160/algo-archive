@@ -1,24 +1,23 @@
 #include <string>
 #include <vector>
-#include <unordered_set>
-
+#include<set>
 using namespace std;
 
 bool solution(vector<string> phone_book) {
     bool answer = true;
-    unordered_set <string> number;
-    
-    for(auto s:phone_book){
-        number.insert(s);
+    set<string> book;
+    for(auto p:phone_book){
+        book.insert(p);
     }
-    for(auto num: number){
-        string prefix = "";
-        for (int i=0; i<num.size()-1;i++){
-            prefix+=num[i];
-            if(number.contains(prefix)){
-                return false;
-            }
+    for(auto num:book){
+        string temp="";
+        for(int i=0; i<num.size()-1; i++){
+            temp+=num[i];
+            if(book.contains(temp)) return false;
         }
     }
+    
+    
+    
     return true;
 }
