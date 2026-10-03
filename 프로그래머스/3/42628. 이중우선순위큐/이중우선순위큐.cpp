@@ -1,27 +1,32 @@
 #include <string>
 #include <vector>
-#include <set>
+#include<set>
+#include<iostream>
 using namespace std;
 
 vector<int> solution(vector<string> operations) {
     vector<int> answer;
-    multiset<int> m; // 오름차순 정렬
-    for(auto s:operations){
-        if(s[0]=='I'){
-            s.erase(0, 2);
-            m.insert(stoi(s));
+    multiset<int> s;
+    for(auto ope:operations){
+        if(ope[0]=='I'){
+            ope.erase(0,2);
+            s.insert(stoi(ope));
         }
-        else if(s=="D -1"){
-            if(!m.empty())
-                m.erase(m.begin());
+        else if(ope=="D -1"){
+            if(!s.empty())
+                s.erase(s.begin());
         }
-        else if(s=="D 1"){
-            if(!m.empty())
-                m.erase(prev(m.end()));
-
+        else{
+            if(!s.empty())
+                s.erase(prev(s.end()));
         }
     }
-    if(m.empty()) return {0,0};
-    answer = {*m.rbegin(), *m.begin()};
+    if(s.empty()) return {0,0};
+    answer = {*prev(s.end()), *s.begin()};
     return answer;
+    // int a=*s.rbegin();
+    // cout<<a<<" ";
+    // return {a,a};
+    // answer = {*s.begin(), *s.rend()};
+    // return answer;
 }
