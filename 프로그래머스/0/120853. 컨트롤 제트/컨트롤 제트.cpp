@@ -14,25 +14,23 @@ int solution(string s) {
             continue;
         }
         if(s[i]=='Z'){
-            v.push_back(1500);
+            if(!v.empty()){
+                v.pop_back();
+            }
             i++;
             continue;
         }
+        
         string temp="";
         while(i<s.size() && s[i]!=' '){
             temp+=s[i];
             i++;
         }
-        cout<<temp<<" ";
         v.push_back(stoi(temp));
     }
     
-    for(int i=0; i<v.size(); i++){
-        if(v[i+1]==1500 || v[i]==1500) continue;
-        else{
-            answer+=v[i];
-            cout<<answer<<" ";
-        }
+    for(auto c:v){
+        answer+=c;
     }
     
     return answer;
