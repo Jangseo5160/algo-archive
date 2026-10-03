@@ -1,39 +1,35 @@
 #include <string>
 #include <vector>
+#include<queue>
+#include<unordered_map>
 
 using namespace std;
-vector<bool> visited;
-int answer;
 
-void dfs(string curr, string target, vector<string>& words, int depth){
-    if(curr==target) {
-        answer=min(answer, depth);
-        return;
-    }
-    for(int i=0; i<words.size(); i++){
-        if(!visited[i]){
-            int cnt=0;
-            for(int j=0; j<target.size(); j++){
-                if(curr[j]!=words[i][j]){
-                    cnt++;
+int solution(string begin, string target, vector<string> words) {
+    int answer = 0;
+    unordered_map<string, int> visited;
+    queue<string> q;
+    q.push(begin);
+    visited[begin]=0;
+    
+    while(!q.empty()){
+        string cur = q.front();
+        q.pop();
+        
+        for(auto w:words){
+            if(!visited.contains(w)){
+                int cnt=0;
+                for(int i=0; i<w.size(); i++){
+                    if(cur[i]!=w[i]) cnt++;
                 }
-            }
-            if(cnt==1){
-                visited[i]=true;
-                dfs(words[i], target, words, depth+1);
-                visited[i]=false;
+                if(cnt==1){
+                    q.push(w);
+                    visited[w]=visited[cur]+1;
+                }
             }
         }
     }
-}
-
-
-int solution(string begin, string target, vector<string> words) {
-    visited.assign(words.size(), false);
-    answer = 1e9;
-    dfs(begin, target, words,0);
-    if(answer==1e9){
-        return 0;
-    }
-    return answer;
+    if(!visited.contains(target) || visited[target]==-1) return 0;
+    
+    return visited[target];
 }
