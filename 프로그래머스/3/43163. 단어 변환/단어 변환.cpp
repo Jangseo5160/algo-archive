@@ -25,6 +25,7 @@ int solution(string begin, string target, vector<string> words) {
                 if(cnt==1){
                     q.push(w);
                     visited[w]=visited[cur]+1;
+                    if(w==target) return visited[w];
                 }
             }
         }
