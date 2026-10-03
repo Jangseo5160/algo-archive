@@ -16,6 +16,7 @@ void dfs(string s, auto& word){
     }
     for(auto w:W){
         dfs(s+w, word);
+        if(answer!=0) return;
         
     }
 }
