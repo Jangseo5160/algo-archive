@@ -1,36 +1,32 @@
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <set>
-
+#include<algorithm>
+#include<set>
+#include<iostream>
 using namespace std;
-bool isPrime(int n) {
-    if (n < 2)
-        return false;
 
-    for (int i = 2; i * i <= n; i++) {
-        if (n % i == 0)
-            return false;
+bool isPrime(int a){
+    if(a<2) return false;
+    for(int i=2; i*i<=a; i++){
+        if(a%i==0) return false;
     }
-
     return true;
 }
+
 int solution(string numbers) {
     int answer = 0;
-    set<int> nums;
-    vector<int> order;
     sort(numbers.begin(), numbers.end());
+    set<int> s;
     do{
-        int num=0;
-        for(char c:numbers){
-            num = num*10 + (c-'0');
-            nums.insert(num);
+        string temp="";
+        for(auto c:numbers){
+            temp+=c;
+            s.insert(stoi(temp));
         }
-        
     }while(next_permutation(numbers.begin(), numbers.end()));
     
-    for(auto n:nums){
-        if(isPrime(n)) answer++;
+    for(auto t:s){
+        if(isPrime(t)) answer++;
     }
     
     return answer;
