@@ -1,22 +1,20 @@
 #include <string>
 #include <vector>
-#include <iostream>
-#include <algorithm>
-
+#include<algorithm>
+#include<iostream>
 using namespace std;
 
 string solution(vector<int> numbers) {
     string answer = "";
-    vector<string> v;
-    for(auto n:numbers){
-        v.push_back(to_string(n));
-    }
-    sort(v.begin(), v.end(), [](string a, string b){
-        return a+b>b+a;
+    sort(numbers.begin(), numbers.end(), [](auto&a, auto& b){
+        string sa = to_string(a);
+        string sb= to_string(b);
+        return sa+sb>sb+sa;
     });
-    for(auto a:v){
-        answer+=a;
+    
+    for(auto n:numbers){
+        answer+=to_string(n);
     }
-    if(answer[0] == '0') return "0";
+    if(answer[0]=='0') return "0";
     return answer;
 }
