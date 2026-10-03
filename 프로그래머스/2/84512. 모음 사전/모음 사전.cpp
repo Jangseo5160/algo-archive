@@ -1,25 +1,26 @@
 #include <string>
 #include <vector>
-#include <stack>
-using namespace std;
 
-int solution(string word) {
-    int answer = 0;
-    stack<string> stk;
-    string ori = "AEIOU";
-    stk.push("");
-    int cnt=-1;
-    while(!stk.empty()){ //u o i e a au ao ai ae aa aao.. aaae
-        string cur = stk.top();
-        stk.pop();
+using namespace std;
+int answer=0;
+string W="AEIOU";
+int cnt=0;
+void dfs(string s, auto& word){
+    if(s.size()>5) return;
+    if(!s.empty()){
         cnt++;
-        if(cur==word) return cnt;
-        if(cur.size()==5) continue;
-        for(int i=4; i>=0; i--){
-            stk.push(cur+ori[i]);
+        if(s==word){
+            answer=cnt;
+            return;
         }
     }
-    
-    
+    for(auto w:W){
+        dfs(s+w, word);
+        
+    }
+}
+
+int solution(string word) {
+    dfs("", word);
     return answer;
 }
