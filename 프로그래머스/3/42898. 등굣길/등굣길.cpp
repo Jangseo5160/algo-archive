@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
 #include<iostream>
-#include <algorithm>
 using namespace std;
 
 int solution(int m, int n, vector<vector<int>> puddles) {
@@ -17,8 +16,16 @@ int solution(int m, int n, vector<vector<int>> puddles) {
                 continue;
             }
             bool flag=false;
-            if(find(puddles.begin(), puddles.end(), vector<int>{c, r})==puddles.end())
+            for(const auto& p:puddles){
+                if(p[0]==c && p[1]==r){
+                    flag=true;
+                    break;
+                }
+            }
+            if(!flag){
                 board[r][c] = (board[r-1][c]+board[r][c-1])%1000000007;
+            }
+            
 
         }
     }
