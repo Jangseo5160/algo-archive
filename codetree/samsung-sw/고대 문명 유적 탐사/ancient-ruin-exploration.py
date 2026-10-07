@@ -22,6 +22,7 @@
 K번까지 전에도, 탐사진행했는데 유물 획득가치가 없으면 즉시 종료. 이때 종료되는 턴에 아무값도 출력하지 않음
 '''
 from collections import deque
+from pydoc import visiblename
 
 K, M = map(int, input().split())
 board = [[0]*5 for _ in range(5)]
@@ -67,81 +68,37 @@ def bfs(temp):
                         pos_set.add((pr, pc))
     return cnt, pos_set
 
+def rotate90(array, r, c, times):
+    new = [row[:] for row in array]
+    sub = [array[i][c-1:c+2] for i in range(r-1, r+2)]
+    for _ in range(times):
+        sub = [list(row) for row in zip(*sub[::-1])]
+    for i in range(3):
+        for j in range(3):
+            new[r-1+i][c-1+j] = sub[i][j]
+    return new
 
 def explore(board):
     group = set()
-    for r in range(1, 4):
-        for c in range(1, 4):
-            temp = [row[:] for row in board]
-            d=1
-            for i in (-1,0,1):
-                temp[r+i][c+1] = board[r-1][c+i]
-                temp[r-1][c+i] = board[r-i][c-1]
-                temp[r+i][c-1] = board[r+1][c+i]
-                temp[r+1][c+i] = board[r-i][c+1]
-            count, _ = bfs(temp)
-            if count>0:
-                group.add((count, -d, -c, -r))
-    for r in range(1, 4):
-        for c in range(1, 4):
-            temp = [row[:] for row in board]
-            d=2
-            for i in (-1,0,1):
-                temp[r+i][c+1] = board[r-i][c-1]
-                temp[r-i][c-1] = board[r+i][c+1]
-                temp[r-1][c+i] = board[r+1][c-i]
-                temp[r+1][c-i] = board[r-1][c+i]
-            count, _ = bfs(temp)
-            if count > 0:
-                group.add((count, -d, -c, -r))
-    for r in range(1, 4):
-        for c in range(1, 4):
-            temp = [row[:] for row in board]
-            d=3
-            for i in (-1,0,1):
-                # 왼쪽으로 90도
-                temp[r-1][c-i] = board[r-i][c+1]
-                temp[r-i][c-1] = board[r-1][c+i]
-                temp[r+1][c-i] = board[r-i][c-1]
-                temp[r+i][c+1] = board[r+1][c-i]
-            count, _ = bfs(temp)
-            if count > 0:
-                group.add((count, -d, -c, -r))
+    temp = [row[:] for row in board]
+    for d in range(1, 4):
+        for r in range(1, 4):
+            for c in range(1, 4):
+                new = rotate90(board, r, c, d)
+                count, _ = bfs(new)
+                if count>0:
+                    group.add((count, -d, -c, -r))
     if len(group)>0:
         fcnt, neg_fd, neg_fc, neg_fr = max(group)
         r = -neg_fr
         c = -neg_fc
-        temp = [row[:] for row in board]
-        if -neg_fd == 1:
-            for i in (-1,0,1):
-                temp[r+i][c+1] = board[r-1][c+i]
-                temp[r-1][c+i] = board[r-i][c-1]
-                temp[r+i][c-1] = board[r+1][c+i]
-                temp[r+1][c+i] = board[r-i][c+1]
-                # board = temp
-        if -neg_fd == 2:
-            for i in (-1,0,1):
-                temp[r+i][c+1] = board[r-i][c-1]
-                temp[r-i][c-1] = board[r+i][c+1]
-                temp[r-1][c+i] = board[r+1][c-i]
-                temp[r+1][c-i] = board[r-1][c+i]
-                # board = temp
-        if -neg_fd ==3:
-            for i in (-1,0,1):
-                # 왼쪽으로 90도
-                temp[r-1][c-i] = board[r-i][c+1]
-                temp[r-i][c-1] = board[r-1][c+i]
-                temp[r+1][c-i] = board[r-i][c-1]
-                temp[r+i][c+1] = board[r+1][c-i]
-                # board = temp
-        board = [row[:] for row in temp]
-        return fcnt, board
+        new = rotate90(board, -neg_fr, -neg_fc, -neg_fd)
+        return fcnt, new
     else: return 0, board
 
 def score(board):
     total = 0
     while True:
-        
         cnt, pos_set = bfs(board)
         if cnt==0: break
         total+=cnt
@@ -151,8 +108,6 @@ def score(board):
         for c in range(5):
             for r in range(4, -1, -1):
                 if board[r][c] == -1:
-                    if not wall:
-                        break
                     board[r][c] = wall.popleft()
     return total
 
@@ -162,7 +117,6 @@ for _ in range(K):
     if cnt==0:
         break
     total = score(board) # cnt 올라가고, 그자리 wall에서 채우고, 또 가능한지 확인하고 또 wall 채우고. cnt가 0이라면 그만
-
     answer.append(total)
 print(*answer)
 
