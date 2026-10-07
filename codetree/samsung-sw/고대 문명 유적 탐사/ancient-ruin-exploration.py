@@ -1,148 +1,169 @@
 '''
-5x5 격자에서 7가지의 유물 조각 (1~7)
+고대 문명 유적
+5*5 형태
+유물 조각 배치
+7가지 종류
+1~7 표현
 
 1. 탐사 진행
-    candidate_rotation()
-    - 회전 중심 좌표 (1,1 ~ 3,3)별로 90도 180도 270도 중 하나의 각도만큼 회전 했을때의 1차 획득 가치 도출 
-        - 이때 최대 가치 -> 회전 각도 -> 열이 가장 작은 구간 -> 행이 가장 작은 구간 대로 우선순위 
-    
-    go_rotation()
-    - 앞서 뽑은 후보에 대해 회전 진행 
+3*3 격자 선택. 격자 회전은 90, 180, 270도 중 하나. 항상 회전 하나는 해야됨
+회전 선택 조건: 유물 획득 가치 최대화>회전각도 작은거> 열 작은거, 행 작은거 선택
 
-2. 유물 획득
-    get_treasure()
-    - 방문하지 않은 칸에 대해 상하좌우로 인접한 같은 종류의 유물 조각이 3개 이상일 경우 가치 카운트 
-    - 총 가치 리턴하고 각 좌표들도 임시 격자에다가 false로 표시해두기
+2. 유물획득
+1차: 상하좌우로 인접하게 모임. 3개 이상 연결된 경우 유물 모여서 사라짐. 유물 가치는 모인 조각 개수와 같음
+1~7까지 숫자 M개 열번호 작은거부터>행번호 큰순서대로 조각 넣어줌
+이 조각은 없어진거.
 
-    put_treasure()
-    - 조각이 사라진 위치에 새로운 조각 넣기 
-    - 열 번호 작은 순 -> 행 번호 큰 순 
+유물 연쇄 획득: 새로운 조각 넣어주면 3개 이상 연결 가능. 더이상 3개 이상 연결되지 않을때까지 반복
 
-    + 유물 연쇄 힉득 (유물이 없을 때까지 반복)
-        
-3. 탐사 반복
-    - 총 K번 턴에 걸쳐 진행 
-    - 각 턴마다 획득한 유물의 가치의 총합 출력 
-    - 1차 유물 획득에서 아무것도 없었다면 K번 못채워도 종료 
-
+3. 탐사반복
+탐사진행~연쇄획득을 1턴으로, 총 K번 진행
+각 턴마다 획득한 유물 가치 총합 출력.
+K번까지 전에도, 탐사진행했는데 유물 획득가치가 없으면 즉시 종료. 이때 종료되는 턴에 아무값도 출력하지 않음
 '''
 from collections import deque
 
-dx = [-1, 1, 0, 0]
-dy = [0, 0, -1, 1]
-
-def in_range(x, y):
-    return 0 <= x < 5 and 0 <= y < 5
-
-
-# 1. 유물 획득 및 가치 계산 함수
-def get_treasure(current_grid):
-    total_value = 0
-    is_treasure = [[False] * 5 for _ in range(5)]
-    visited = [[False] * 5 for _ in range(5)]
-    
-    for i in range(5):
-        for j in range(5):
-            if not visited[i][j]:
-                queue = deque([(i, j)])
-                visited[i][j] = True
-                group = [(i, j)] # 연결된 좌표들을 담을 리스트
-                
-                while queue:
-                    cx, cy = queue.popleft()
-                    
-                    for d in range(4):
-                        nx = cx + dx[d]
-                        ny = cy + dy[d]
-                        
-                        if in_range(nx, ny) and not visited[nx][ny] and current_grid[cx][cy] == current_grid[nx][ny]:
-                            queue.append((nx, ny))
-                            visited[nx][ny] = True
-                            group.append((nx, ny))
-                
-                # 3개 이상 연결되었다면 가치 추가 및 삭제 표시
-                if len(group) >= 3:
-                    total_value += len(group)
-                    for gx, gy in group:
-                        is_treasure[gx][gy] = True
-                        
-    return total_value, is_treasure
-
-
-# 2. 3x3 부분 격자 회전 함수
-def rotate_grid(original_grid, r, c, angle):
-    # 2차원 배열 깊은 복사 (deepcopy보다 빠름)
-    new_grid = [row[:] for row in original_grid]
-    
-    for _ in range(angle):
-        tmp_grid = [row[:] for row in new_grid]
-        for i in range(3):
-            for j in range(3):
-                # 90도 시계방향 회전 공식
-                new_grid[r-1+i][c-1+j] = tmp_grid[r+1-j][c-1+i]
-                
-    return new_grid
-
-
-# 3. 최적의 회전 후보 찾기 함수
-def candidate_rotation():
-    max_value = -1
-    best_grid = None
-    
-    # 우선순위: 1.회전각도(작은순) -> 2.열(작은순) -> 3.행(작은순)
-    for angle in range(1, 4):
-        for c in range(1, 4):
-            for r in range(1, 4):
-                rotated = rotate_grid(grid, r, c, angle)
-                val, _ = get_treasure(rotated)
-                
-                if val > max_value:
-                    max_value = val
-                    best_grid = rotated
-                    
-    return max_value, best_grid
-
-
-# 4. 빈 곳에 새로운 유물 조각 채우기 함수
-def put_treasure(current_grid, is_treasure):
-    # 열 번호가 작은 순 -> 행 번호가 큰 순
-    for c in range(5):
-        for r in range(4, -1, -1):
-            if is_treasure[r][c]:
-                # 큐가 비어있지 않을 때만 채움 (안전장치)
-                if wait_treasure:
-                    current_grid[r][c] = wait_treasure.popleft()
-
-
 K, M = map(int, input().split())
-grid = [list(map(int, input().split())) for _ in range(5)]
-wait_treasure = deque(list(map(int, input().split())))
+board = [[0]*5 for _ in range(5)]
 
-# 메인 시뮬레이션
-for k in range(K):
-    # 1단계: 탐사 진행 (최적의 회전 찾기)
-    turn_val, next_grid = candidate_rotation()
-    
-    # 1차 획득에서 아무것도 얻지 못했다면 즉시 종료
-    if turn_val == 0:
-        break
-        
-    grid = next_grid # 최적의 격자로 업데이트
-    turn_total_value = 0
-    
-    # 2단계 & 3단계: 유물 획득 및 연쇄 작용
+for i in range(5):
+    board[i] = list(map(int, input().split()))
+
+wall=deque()
+n = list(map(int, input().split()))
+for num in n:
+    wall.append(num)
+
+answer = []
+dr = [-1,1,0,0]
+dc = [0,0,-1,1]
+
+
+def bfs(temp):
+    cnt = 0
+    visited = [[False]*5 for _ in range(5)]
+    pos_set = set()
+    for r in range(5):
+        for c in range(5):
+            if visited[r][c] is False:
+                q=deque([(r, c)])
+                visited[r][c]=True
+                temp_s=1
+                pos = set()
+                pos.add((r, c))
+                while q:
+                    cr, cc = q.popleft()
+                    for d in range(4):
+                        nr=cr+dr[d]
+                        nc=cc+dc[d]
+                        if 0<=nr<5 and 0<=nc<5 and visited[nr][nc] is False and temp[r][c] == temp[nr][nc]:
+                            q.append((nr, nc))
+                            visited[nr][nc] = True
+                            temp_s+=1
+                            pos.add((nr, nc))
+                if temp_s>=3:
+                    cnt+=temp_s
+                    for (pr, pc) in pos:
+                        pos_set.add((pr, pc))
+    return cnt, pos_set
+
+
+def explore(board):
+    group = set()
+    for r in range(1, 4):
+        for c in range(1, 4):
+            temp = [row[:] for row in board]
+            d=1
+            for i in (-1,0,1):
+                temp[r+i][c+1] = board[r-1][c+i]
+                temp[r-1][c+i] = board[r-i][c-1]
+                temp[r+i][c-1] = board[r+1][c+i]
+                temp[r+1][c+i] = board[r-i][c+1]
+            count, _ = bfs(temp)
+            if count>0:
+                group.add((count, -d, -c, -r))
+    for r in range(1, 4):
+        for c in range(1, 4):
+            temp = [row[:] for row in board]
+            d=2
+            for i in (-1,0,1):
+                temp[r+i][c+1] = board[r-i][c-1]
+                temp[r-i][c-1] = board[r+i][c+1]
+                temp[r-1][c+i] = board[r+1][c-i]
+                temp[r+1][c-i] = board[r-1][c+i]
+            count, _ = bfs(temp)
+            if count > 0:
+                group.add((count, -d, -c, -r))
+    for r in range(1, 4):
+        for c in range(1, 4):
+            temp = [row[:] for row in board]
+            d=3
+            for i in (-1,0,1):
+                # 왼쪽으로 90도
+                temp[r-1][c-i] = board[r-i][c+1]
+                temp[r-i][c-1] = board[r-1][c+i]
+                temp[r+1][c-i] = board[r-i][c-1]
+                temp[r+i][c+1] = board[r+1][c-i]
+            count, _ = bfs(temp)
+            if count > 0:
+                group.add((count, -d, -c, -r))
+    if len(group)>0:
+        fcnt, neg_fd, neg_fc, neg_fr = max(group)
+        r = -neg_fr
+        c = -neg_fc
+        temp = [row[:] for row in board]
+        if -neg_fd == 1:
+            for i in (-1,0,1):
+                temp[r+i][c+1] = board[r-1][c+i]
+                temp[r-1][c+i] = board[r-i][c-1]
+                temp[r+i][c-1] = board[r+1][c+i]
+                temp[r+1][c+i] = board[r-i][c+1]
+                # board = temp
+        if -neg_fd == 2:
+            for i in (-1,0,1):
+                temp[r+i][c+1] = board[r-i][c-1]
+                temp[r-i][c-1] = board[r+i][c+1]
+                temp[r-1][c+i] = board[r+1][c-i]
+                temp[r+1][c-i] = board[r-1][c+i]
+                # board = temp
+        if -neg_fd ==3:
+            for i in (-1,0,1):
+                # 왼쪽으로 90도
+                temp[r-1][c-i] = board[r-i][c+1]
+                temp[r-i][c-1] = board[r-1][c+i]
+                temp[r+1][c-i] = board[r-i][c-1]
+                temp[r+i][c+1] = board[r+1][c-i]
+                # board = temp
+        board = [row[:] for row in temp]
+        return fcnt, board
+    else: return 0, board
+
+def score(board):
+    total = 0
     while True:
-        # 현재 격자에서 획득할 유물 찾기
-        val, is_treasure = get_treasure(grid)
         
-        # 더 이상 터질 유물이 없으면 연쇄 종료
-        if val == 0:
-            break
-            
-        turn_total_value += val
-        
-        # 유물이 사라진 자리에 새로 채워넣기
-        put_treasure(grid, is_treasure)
-        
-    # 각 턴마다 획득한 총 가치 출력 (보통 공백 기준으로 출력합니다)
-    print(turn_total_value, end=" ")
+        cnt, pos_set = bfs(board)
+        if cnt==0: break
+        total+=cnt
+        for (r, c) in pos_set:
+            board[r][c] = -1
+
+        for c in range(5):
+            for r in range(4, -1, -1):
+                if board[r][c] == -1:
+                    if not wall:
+                        break
+                    board[r][c] = wall.popleft()
+    return total
+
+
+for _ in range(K):
+    cnt, board = explore(board) # board 상태 변화
+    if cnt==0:
+        break
+    total = score(board) # cnt 올라가고, 그자리 wall에서 채우고, 또 가능한지 확인하고 또 wall 채우고. cnt가 0이라면 그만
+
+    answer.append(total)
+print(*answer)
+
+# 4 8 6 3 3 3 12 9 7 14
