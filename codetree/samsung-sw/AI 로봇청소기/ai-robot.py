@@ -1,140 +1,119 @@
+'''
+청소기 이동: 가장 가까운 이동거리인 먼지있는 격자로 이동.
+물건, 청소기 있으면 안됨. 범위 내 이동
+이동거리 짧은거>행번호 작은거> 열번호 작은거
+
+청소: 지금 바라보고 있는 방향 기준으로 오른쪽, 아래쪽, 왼쪽, 위쪽 청소
+4가지 격자에서 청소할 수 있는 먼지량 가장 큰거 선정
+먼지량 큰거 > 우/하/좌/상 순서
+최대 먼지 청소량 20 => board에 남는거 max(p-20, 0), 청소량 : min(20, p)
+청소기 순서대로 진행
+
+먼지 축적: 모든 먼지있는 곳 +5
+
+먼지 확산: 주변 4방향 먼지량 합 //10 만큼 확산
+동시 확산
+'''
 from collections import deque
-
-# bfs
-# 이동거리 => dist -1로 초기화하고 배열 만들기, append 할 때, dist +1 업데이트,
-# dist가 -1이라면 한번도 방문하지 않았다는 의미라서, visited를 대신할 수 있긴하다
-
-# tuple 정렬, min
-# tuple로 변수별 최대 최소 정렬할때, sort를 써도 되고, min을 사용해도 된다.
-# tuple은 사전식 비교, lambda 쓸때는 2번째 원소 기준으로 정렬하고 싶을 때, min(arr, key = lambda x: x[1])
-
-# 반복되는 좌표 계산 함수화, 현재는 하드코딩됨,
-
-# 동시발생됨 => 원본 배열 얕은 복사
-
 N, K, L = map(int, input().split())
-grid = [ list(map(int, input().split())) for _ in range(N)]
-cleaner = [[0,0] for _ in range(K)]
+board = [list(map(int, input().split())) for _ in range(N)]
+robot = [[0]*2 for _ in range(K)]
 for i in range(K):
     r, c = map(int, input().split())
-    cleaner[i] = [r-1,c-1]
+    robot[i] = [r-1, c-1]
 
-dr = [-1,1,0,0]
-dc = [0,0,-1,1]
+def move():
+    dr = [0, 1, 0, -1]
+    dc = [1, 0, -1, 0]
+    temp = set()
+    for [r, c] in robot:
+        temp.add((r, c))
 
-# 청소기 이동
-# 청소기 좌표, 먼지 현황, 몇번째 청소기인지
-# 이동거리 계산, 가장 가까운 격자로 이동
-# 청소기의 좌표만 다시 계산해서 바뀌는 건 청소기 좌표뿐
-# 이동거리 짧은것 > 같다면 행작은거>열작은거
-def move(cleaner, grid, i):
-    sr, sc = cleaner[i]
-    q=deque([(sr, sc)])
-    visited=[[False]*N for _ in range(N)]
-    visited[sr][sc] = True
-    cleaner_set = set(map(tuple,cleaner))
-    candidates = []
-    dist = [[-1]*N for _ in range(N)]
-    dist[sr][sc]=0
-    while q:
-        cr, cc = q.popleft()
+    for i in range(K):
+        sr, sc = robot[i]
+        if board[sr][sc]>0:
+            continue
+        q=deque([(sr, sc)])
+        dist = [[-1]*N for _ in range(N)]
+        dist[sr][sc] = 0
+        pos = set() # 먼지있는 곳 이동거리, 행, 열
 
-        if grid[cr][cc]>0:
-            candidates.append((dist[cr][cc], cr, cc))
+        while q:
+            cr, cc = q.popleft()
+            for d in range(4):
+                nr, nc = cr+dr[d], cc+dc[d]
+                if 0<=nr<N and 0<=nc<N and board[nr][nc]!=-1 and dist[nr][nc]==-1 and (nr, nc) not in temp:
+                    q.append((nr, nc))
+                    dist[nr][nc] = dist[cr][cc] +1
+                    if board[nr][nc] >0:
+                        pos.add((dist[nr][nc], nr, nc))
+        if pos:
+            _, er, ec = min(pos)
+            robot[i] = [er, ec]
+            temp.remove((sr, sc))
+            temp.add((er, ec))
 
-        for d in range(4):
-            nr, nc = cr+dr[d], cc+dc[d]
-            if 0<=nr<N and 0<=nc<N and visited[nr][nc]==False and grid[nr][nc]!=-1 and (nr, nc) not in cleaner_set:
-                q.append((nr, nc))
-                visited[nr][nc]=True
-                dist[nr][nc]=dist[cr][cc]+1
-    if not candidates:
-        return
-    candidates.sort()
-    _, new_r, new_c = min(candidates)
-    cleaner[i] = [new_r, new_c]
-
-
-def clean(cleaner, grid):
-    possible = []
-    nlist = []
-    cleaner_set = set(map(tuple, cleaner))
-    for r, c in cleaner:
-        # 오른쪽
-        for d in range(4):
-            total = 0
-            if d==0:
-                nlist = [(r, c+1),(r-1,c),(r+1,c),(r,c)]
-        # 아래쪽
-            if d==1:
-                nlist = [(r+1, c), (r, c-1), (r, c+1), (r, c)]
-        # 왼쪽
-            if d==2:
-                nlist = [(r, c - 1), (r - 1, c), (r + 1, c), (r, c)]
-        # 위쪽
-            if d==3:
-                nlist = [(r-1, c), (r, c-1), (r , c+1), (r, c)]
-
-            for tempr, tempc in nlist:
-                if 0<=tempr<N and 0<=tempc<N and grid[tempr][tempc]>0:
-                    total += min(grid[tempr][tempc], 20)
-            possible.append((-total, d))
-
-        finald = min(possible)[1]
-        # 오른쪽
-
-        if finald == 0:
-            nlist = [(r, c + 1), (r - 1, c), (r + 1, c), (r, c)]
-        # 아래쪽
-        elif finald == 1:
-            nlist = [(r + 1, c), (r, c - 1), (r, c + 1), (r, c)]
-        # 왼쪽
-        elif finald == 2:
-            nlist = [(r, c - 1), (r - 1, c), (r + 1, c), (r, c)]
-        # 위쪽
-        elif finald == 3:
-            nlist = [(r - 1, c), (r, c - 1), (r, c + 1), (r, c)]
-
-        for tempr, tempc in nlist:
-            if 0 <= tempr < N and 0 <= tempc < N and grid[tempr][tempc] > 0:
-                grid[tempr][tempc] = max(0, grid[tempr][tempc]-20)
-        possible = []
+def cases(r, c):
+    group = set()
+    shape = [[(-1, 0), (0,0), (1,0), (0,1)], [(0,-1), (0,0), (0,1),(1,0)], [(0,-1),(0,0), (1,0), (-1,0)], [(0,-1),(0,0),(0,1),(-1,0)]]
+    for d in range(4):
+        total = 0
+        for (ddr, ddc) in shape[d]:
+            nr, nc = r+ddr, c+ddc
+            if 0<=nr<N and 0<=nc<N and board[nr][nc]>0:
+                #########청소기 있는 곳 청소 가능한지? 일단 가능하다고 하고 진행
+                total += min(board[nr][nc], 20)
+        group.add((total, -d))
+    return group
 
 
-def accumulate(grid):
+def clean():
+    # 우/하/좌/상
+    for ori_r, ori_c in robot:
+        group = cases(ori_r, ori_c)
+        _, neg_fd = max(group)
+        fd = -neg_fd
+
+        shape = [[(-1, 0), (0, 0), (1, 0), (0, 1)], [(0, -1), (0, 0), (0, 1), (1, 0)],
+                 [(0, -1), (0, 0), (1, 0), (-1, 0)], [(0, -1), (0, 0), (0, 1), (-1, 0)]]
+
+        for (ddr, ddc) in shape[fd]:
+            nnr, nnc = ori_r + ddr, ori_c + ddc
+            if 0 <= nnr < N and 0 <= nnc < N and board[nnr][nnc] > 0:
+                board[nnr][nnc] = max((0, board[nnr][nnc]-20))
+
+def plus():
     for r in range(N):
         for c in range(N):
-            if grid[r][c]>0:
-                grid[r][c]+=5
+            if board[r][c]>0:
+                board[r][c]+=5
 
-def spread(grid):
-    new_grid = [row[:] for row in grid]
-
-    for r  in range(N):
+def spread():
+    global board
+    new = [row[:] for row in board]
+    shape = [(-1,0), (1,0), (0,-1), (0,1)]
+    for r in range(N):
         for c in range(N):
-            if grid[r][c]==0:
-                total = 0
-                for d in range(4):
-                    nr, nc = r+dr[d], c+dc[d]
-                    if 0<=nr<N and 0<=nc<N and grid[nr][nc]>0:
-                        total+=grid[nr][nc]
-                new_grid[r][c] = total//10
-    return new_grid
+            if board[r][c]==0:
+                total=0
+                for (dddr, dddc) in shape:
+                    nr, nc = r+dddr, c+dddc
+                    if 0<=nr<N and 0<=nc<N and board[nr][nc]>0:
+                        total += board[nr][nc]
+                new[r][c] += total//10
+    board = new
 
-def main(grid, cleaner):
-    for _ in range(L):
-        for i in range(K):
-            move(cleaner, grid, i)
-
-        clean(cleaner, grid)
-        accumulate(grid)
-        grid = spread(grid)
-
-        total = 0
-        for r in range(N):
-            for c in range(N):
-                if grid[r][c]>0:
-                    total+=grid[r][c]
-        total = sum(grid[r][c] for r in range(N) for c in range(N) if grid[r][c]>0)
-        print(total)
-main(grid, cleaner)
+for _ in range(L):
+    score=0
+    move()
+    clean()
+    plus()
+    spread()
+    for r in range(N):
+        for c in range(N):
+            if board[r][c]>0:
+                score+=board[r][c]
+    if score==0:
+        print(score)
+        break
+    print(score)
